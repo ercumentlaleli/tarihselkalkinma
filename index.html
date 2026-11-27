@@ -79,10 +79,16 @@ main{position:relative;z-index:2;padding-left:calc(var(--railw) + max(16px,env(s
 .kick{font:500 12px var(--font-m);letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0}
 .hero h1{font:800 clamp(2.6rem,6.4vw,5rem)/0.98 var(--font-d);letter-spacing:-.02em;margin:6px 0 0;text-wrap:balance}
 .hero .sub{font-size:1.1rem;color:var(--muted);max-width:60ch;margin:14px 0 0}
-.defs{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.defs{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;align-items:stretch}
 .def{background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(6px);border:1px solid var(--line);border-radius:12px;padding:14px 16px;min-width:0}
 .def .src{font:500 11px var(--font-m);letter-spacing:.05em;color:var(--muted);text-transform:uppercase}
 .def p{margin:6px 0 0;font-size:.95rem;line-height:1.5}
+.ind{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line)}
+.ind ul{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:9px}
+.ind li{font-size:.82rem;line-height:1.42;color:var(--muted)}
+.ind li b{display:block;color:var(--fg);font-weight:600;font-size:.87rem;margin-bottom:1px}
+.ind .tag{display:inline-block;font:500 9.5px var(--font-m);text-transform:uppercase;letter-spacing:.06em;color:var(--accent);
+  border:1px solid color-mix(in srgb,var(--accent) 40%,var(--line));border-radius:4px;padding:0 5px;margin-right:6px;vertical-align:1px}
 .sdg{display:grid;gap:12px}
 .sdg-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 16px}
 .sdg-head h2{font:700 1.15rem var(--font-d);margin:0}
@@ -289,10 +295,10 @@ details.cardx[open]>.cardin{animation:drop .45s cubic-bezier(.2,.7,.2,1)}
         <p class="sub">Kalkınma iktisadı, üretim kapasitesindeki artışın toplumun refahına nasıl yansıdığını yaklaşık seksen yıldır farklı kuramsal çerçevelerle incelemektedir.</p>
       </div>
       <div class="defs">
-        <div class="def"><span class="src">Temel ayrım</span><p><b>Büyüme</b>, kişi başına üretimin artmasını ifade eder. <b>Kalkınma</b> ise bu artışa üretim yapısının, kurumların ve yaşam koşullarının dönüşümünün eşlik etmesini ifade eder.</p></div>
-        <div class="def"><span class="src">Dudley Seers, 1969</span><p>Seers'e göre kalkınma, yoksulluk, işsizlik ve eşitsizlikte sağlanan azalma ile ölçülmelidir.</p></div>
-        <div class="def"><span class="src">Amartya Sen, 1999</span><p>Sen, kalkınmayı insanların değer verdikleri yaşamı sürdürebilme <b>özgürlüklerinin genişlemesi</b> olarak tanımlar.</p></div>
-        <div class="def"><span class="src">Brundtland Raporu, 1987</span><p>Sürdürülebilir kalkınma, bugünün ihtiyaçlarının gelecek kuşakların kendi ihtiyaçlarını karşılama olanağından ödün verilmeden karşılanmasıdır.</p></div>
+        <div class="def"><span class="src">Temel ayrım</span><p><b>Büyüme</b>, kişi başına üretimin artmasını ifade eder. <b>Kalkınma</b> ise bu artışa üretim yapısının, kurumların ve yaşam koşullarının dönüşümünün eşlik etmesini ifade eder.</p><div class="ind"><span class="src">Göstergeler</span><ul><li><b><span class='tag'>Büyüme</span>GSYH ve kişi başı GSYH</b>Ekonomide üretilen toplam değeri ve bu değerin nüfusa bölünmüş karşılığını ölçer.</li><li><b><span class='tag'>Büyüme</span>Reel GSYH büyüme oranı</b>Üretimin fiyat değişimlerinden arındırılmış yıllık artışını gösterir.</li><li><b><span class='tag'>Kalkınma</span>İnsani Gelişme Endeksi (İGE)</b>Sağlık, eğitim ve gelir boyutlarını birlikte ölçer.</li><li><b><span class='tag'>Kalkınma</span>Sanayi ve hizmetlerin üretimdeki payı</b>Üretim yapısındaki dönüşümün düzeyini gösterir.</li></ul></div></div>
+        <div class="def"><span class="src">Dudley Seers, 1969</span><p>Seers'e göre kalkınma, yoksulluk, işsizlik ve eşitsizlikte sağlanan azalma ile ölçülmelidir.</p><div class="ind"><span class="src">Göstergeler</span><ul><li><b>Yoksulluk oranı</b>Ulusal ya da uluslararası yoksulluk sınırının altında yaşayan nüfusun payını gösterir.</li><li><b>İşsizlik oranı</b>İş arayan ancak iş bulamayan kişilerin işgücü içindeki payını gösterir.</li><li><b>Gini katsayısı</b>Gelir dağılımındaki eşitsizliği 0 (tam eşitlik) ile 1 (tam eşitsizlik) arasında ölçer.</li></ul></div></div>
+        <div class="def"><span class="src">Amartya Sen, 1999</span><p>Sen, kalkınmayı insanların değer verdikleri yaşamı sürdürebilme <b>özgürlüklerinin genişlemesi</b> olarak tanımlar.</p><div class="ind"><span class="src">Göstergeler</span><ul><li><b>İnsani Gelişme Endeksi (İGE)</b>Doğuşta beklenen yaşam süresi, okullaşma süresi ve kişi başı gelirden oluşur.</li><li><b>Çok Boyutlu Yoksulluk Endeksi</b>Sağlık, eğitim ve yaşam standardındaki yoksunlukları hane düzeyinde ölçer.</li><li><b>Eşitsizliğe göre düzeltilmiş İGE</b>İnsani gelişmedeki kazanımların nüfusa ne ölçüde eşit dağıldığını gösterir.</li></ul></div></div>
+        <div class="def"><span class="src">Brundtland Raporu, 1987</span><p>Sürdürülebilir kalkınma, bugünün ihtiyaçlarının gelecek kuşakların kendi ihtiyaçlarını karşılama olanağından ödün verilmeden karşılanmasıdır.</p><div class="ind"><span class="src">Göstergeler</span><ul><li><b>SKA küresel gösterge çerçevesi</b>17 amaçtaki ilerlemeyi 231 benzersiz gösterge ile izler.</li><li><b>Kişi başı CO₂ emisyonu</b>Ekonomik faaliyetin iklim üzerindeki baskısını gösterir.</li><li><b>Düzeltilmiş net tasarruf</b>Doğal kaynak tükenmesini ve kirlilik maliyetini düşerek gerçek tasarrufu ölçer.</li><li><b>Gezegen baskılarına göre düzeltilmiş İGE</b>İGE değerini karbon emisyonu ve malzeme ayak izine göre düzeltir.</li></ul></div></div>
       </div>
       <div class="sdg">
         <div class="sdg-head">
