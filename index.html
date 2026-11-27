@@ -89,8 +89,24 @@ main{position:relative;z-index:2;padding-left:calc(var(--railw) + max(16px,env(s
 .nums{display:flex;flex-wrap:wrap;gap:4px 14px;font:500 12px var(--font-m);color:var(--muted)}
 .nums b{color:var(--fg);font-weight:500}
 .goals{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:6px}
-.goals li{display:flex;gap:8px;align-items:baseline;font-size:.82rem;line-height:1.3;padding:7px 9px;border-radius:8px;
-  background:color-mix(in srgb,var(--surface) 86%,transparent);border-left:3px solid var(--pc)}
+.goals li{border-radius:8px;background:color-mix(in srgb,var(--surface) 86%,transparent);border-left:3px solid var(--pc);transition:background .2s}
+.goals li.open{background:color-mix(in srgb,var(--pc) 14%,var(--surface))}
+.goals li.gdetail{grid-column:1/-1;border-left:3px solid var(--pc);background:color-mix(in srgb,var(--pc) 9%,var(--surface));padding:12px 16px 14px;animation:drop .35s cubic-bezier(.2,.7,.2,1)}
+.gdt{margin:0 0 4px;font:700 .95rem var(--font-d)}
+.gdx{margin:0;font-size:.9rem;line-height:1.55;max-width:95ch}
+.g{appearance:none;border:0;background:none;margin:0;font:inherit;color:var(--fg);text-align:left;cursor:pointer;
+  display:flex;gap:8px;align-items:baseline;width:100%;padding:7px 9px;font-size:.82rem;line-height:1.3;border-radius:8px}
+.g:hover .gn{text-decoration:underline;text-decoration-color:var(--pc);text-underline-offset:3px}
+.g:focus-visible{outline:2px solid var(--pc);outline-offset:-2px}
+.gn{flex:1;min-width:0}
+.pl{flex:none;position:relative;width:10px;height:10px;align-self:center;opacity:.6;transition:transform .25s}
+.pl::before,.pl::after{content:"";position:absolute;background:var(--pc);border-radius:1px}
+.pl::before{left:0;right:0;top:4px;height:2px}
+.pl::after{top:0;bottom:0;left:4px;width:2px}
+.goals li.open .pl{transform:rotate(45deg);opacity:1}
+.goals li.open .gn{font-weight:600}
+.gd{display:none}
+.sdg-hint{font-size:.8rem;color:var(--muted);margin:-4px 0 0}
 .goals .n{font:500 11px var(--font-m);color:var(--pc);min-width:1.6em;font-variant-numeric:tabular-nums}
 .fivep{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.8rem;color:var(--muted)}
 .fivep span{display:inline-flex;align-items:center;gap:6px}
@@ -190,6 +206,7 @@ details.mdl[open]>ul,details.mdl[open]>.models{animation:drop .4s cubic-bezier(.
   .cue svg{animation:none}
   details.mdl[open]>ul,details.mdl[open]>.models{animation:none}
   .chev{transition:none}
+  .goals li.gdetail{animation:none}
   .card{transform:none}
 }
 </style>
@@ -235,24 +252,25 @@ details.mdl[open]>ul,details.mdl[open]>.models{animation:drop .4s cubic-bezier(.
           <h2>BM 2030 Gündemi: Sürdürülebilir Kalkınma Amaçları</h2>
           <div class="nums"><span><b>2015</b> kabul</span><span><b>193</b> ülke</span><span><b>17</b> amaç</span><span><b>169</b> hedef</span></div>
         </div>
+        <p class="sdg-hint">(Açıklama için amaçların üzerine tıklayınız)</p>
         <ol class="goals">
-          <li style="--pc:var(--p1)"><span class="n">01</span>Yoksulluğa son</li>
-          <li style="--pc:var(--p1)"><span class="n">02</span>Açlığa son</li>
-          <li style="--pc:var(--p1)"><span class="n">03</span>Sağlıklı bireyler</li>
-          <li style="--pc:var(--p1)"><span class="n">04</span>Nitelikli eğitim</li>
-          <li style="--pc:var(--p1)"><span class="n">05</span>Toplumsal cinsiyet eşitliği</li>
-          <li style="--pc:var(--p2)"><span class="n">06</span>Temiz su ve sanitasyon</li>
-          <li style="--pc:var(--p3)"><span class="n">07</span>Erişilebilir ve temiz enerji</li>
-          <li style="--pc:var(--p3)"><span class="n">08</span>İnsana yakışır iş ve ekonomik büyüme</li>
-          <li style="--pc:var(--p3)"><span class="n">09</span>Sanayi, yenilikçilik ve altyapı</li>
-          <li style="--pc:var(--p3)"><span class="n">10</span>Eşitsizliklerin azaltılması</li>
-          <li style="--pc:var(--p3)"><span class="n">11</span>Sürdürülebilir şehirler ve topluluklar</li>
-          <li style="--pc:var(--p2)"><span class="n">12</span>Sorumlu üretim ve tüketim</li>
-          <li style="--pc:var(--p2)"><span class="n">13</span>İklim eylemi</li>
-          <li style="--pc:var(--p2)"><span class="n">14</span>Sudaki yaşam</li>
-          <li style="--pc:var(--p2)"><span class="n">15</span>Karasal yaşam</li>
-          <li style="--pc:var(--p4)"><span class="n">16</span>Barış, adalet ve güçlü kurumlar</li>
-          <li style="--pc:var(--p5)"><span class="n">17</span>Amaçlar için ortaklıklar</li>
+          <li style="--pc:var(--p1)"><button class="g" type="button" aria-expanded="false" data-sdg="sdg1"><span class="n">01</span><span class="gn">Yoksulluğa son</span><span class="pl" aria-hidden="true"></span></button><p class="gd" id="sdg1" hidden>Her yerde ve her biçimiyle yoksulluğun sona erdirilmesi hedeflenmektedir. Aşırı yoksulluğun ortadan kaldırılması ve sosyal koruma sistemlerinin yoksul ve kırılgan kesimleri kapsayacak şekilde yaygınlaştırılması öngörülmektedir.</p></li>
+          <li style="--pc:var(--p1)"><button class="g" type="button" aria-expanded="false" data-sdg="sdg2"><span class="n">02</span><span class="gn">Açlığa son</span><span class="pl" aria-hidden="true"></span></button><p class="gd" id="sdg2" hidden>Açlığın sona erdirilmesi, gıda güvenliğinin ve beslenmenin iyileştirilmesi ve sürdürülebilir tarımın desteklenmesi amaçlanmaktadır. Küçük ölçekli üreticilerin verimliliğinin ve gelirlerinin artırılması öncelikler arasında yer almaktadır.</p></li>
+          <li style="--pc:var(--p1)"><button class="g" type="button" aria-expanded="false" data-sdg="sdg3"><span class="n">03</span><span class="gn">Sağlıklı bireyler</span><span class="pl" aria-hidden="true"></span></button><p class="gd" id="sdg3" hidden>Her yaşta herkes için sağlıklı yaşamın güvence altına alınması ve refahın desteklenmesi hedeflenmektedir. Anne ve bebek ölümlerinin azaltılması, salgın hastalıklarla mücadele ve evrensel sağlık hizmetine erişim başlıca hedefler arasındadır.</p></li>
+          <li style="--pc:var(--p1)"><button class="g" type="button" aria-expanded="false" data-sdg="sdg4"><span class="n">04</span><span class="gn">Nitelikli eğitim</span><span class="pl" aria-hidden="true"></span></button><p class="gd" id="sdg4" hidden>Kapsayıcı, hakkaniyete dayalı ve nitelikli eğitimin sağlanması ve herkes için yaşam boyu öğrenme fırsatlarının geliştirilmesi amaçlanmaktadır. Tüm kız ve erkek çocukların ücretsiz ilk ve ortaöğretimi tamamlaması hedeflenmektedir.</p></li>
+          <li style="--pc:var(--p1)"><button class="g" type="button" aria-expanded="false" data-sdg="sdg5"><span class="n">05</span><span class="gn">Toplumsal cinsiyet eşitliği</span><span class="pl" aria-hidden="true"></span></button><p class="gd" id="sdg5" hidden>Toplumsal cinsiyet eşitliğinin sağlanması ve tüm kadınların ve kız çocuklarının güçlendirilmesi hedeflenmektedir. Ayrımcılığın ve şiddetin sona erdirilmesi ile kadınların karar alma süreçlerine tam ve etkin katılımı öngörülmektedir.</p></li>
+          <li style="--pc:var(--p2)"><button class="g" type="button" aria-expanded="false" data-sdg="sdg6"><span class="n">06</span><span class="gn">Temiz su ve sanitasyon</span><span class="pl" aria-hidden="true"></span></button><p class="gd" id="sdg6" hidden>Herkes için suya ve sanitasyona erişimin sağlanması ve su kaynaklarının sürdürülebilir biçimde yönetilmesi amaçlanmaktadır. Su kullanım verimliliğinin artırılması ve su kirliliğinin azaltılması hedefler arasındadır.</p></li>
+          <li style="--pc:var(--p3)"><button class="g" type="button" aria-expanded="false" data-sdg="sdg7"><span class="n">07</span><span class="gn">Erişilebilir ve temiz enerji</span><span class="pl" aria-hidden="true"></span></button><p class="gd" id="sdg7" hidden>Herkes için uygun fiyatlı, güvenilir, sürdürülebilir ve modern enerjiye erişimin sağlanması hedeflenmektedir. Yenilenebilir enerjinin toplam enerji içindeki payının artırılması ve enerji verimliliğinin iyileştirilme hızının iki katına çıkarılması öngörülmektedir.</p></li>
+          <li style="--pc:var(--p3)"><button class="g" type="button" aria-expanded="false" data-sdg="sdg8"><span class="n">08</span><span class="gn">İnsana yakışır iş ve ekonomik büyüme</span><span class="pl" aria-hidden="true"></span></button><p class="gd" id="sdg8" hidden>Sürekli, kapsayıcı ve sürdürülebilir ekonomik büyümenin, tam ve üretken istihdamın ve herkes için insana yakışır işin desteklenmesi amaçlanmaktadır. En az gelişmiş ülkelerde yıllık en az yüzde 7 büyüme sağlanması ve çocuk işçiliğinin sona erdirilmesi hedefler arasındadır.</p></li>
+          <li style="--pc:var(--p3)"><button class="g" type="button" aria-expanded="false" data-sdg="sdg9"><span class="n">09</span><span class="gn">Sanayi, yenilikçilik ve altyapı</span><span class="pl" aria-hidden="true"></span></button><p class="gd" id="sdg9" hidden>Dayanıklı altyapının kurulması, kapsayıcı ve sürdürülebilir sanayileşmenin desteklenmesi ve yeniliğin güçlendirilmesi hedeflenmektedir. Sanayinin istihdam ve milli gelir içindeki payının artırılması ve Ar-Ge harcamalarının yükseltilmesi öngörülmektedir.</p></li>
+          <li style="--pc:var(--p3)"><button class="g" type="button" aria-expanded="false" data-sdg="sdg10"><span class="n">10</span><span class="gn">Eşitsizliklerin azaltılması</span><span class="pl" aria-hidden="true"></span></button><p class="gd" id="sdg10" hidden>Ülke içindeki ve ülkeler arasındaki eşitsizliklerin azaltılması amaçlanmaktadır. Nüfusun en yoksul yüzde 40'lık kesiminin gelirinin ulusal ortalamanın üzerinde bir hızla artırılması hedeflenmektedir.</p></li>
+          <li style="--pc:var(--p3)"><button class="g" type="button" aria-expanded="false" data-sdg="sdg11"><span class="n">11</span><span class="gn">Sürdürülebilir şehirler ve topluluklar</span><span class="pl" aria-hidden="true"></span></button><p class="gd" id="sdg11" hidden>Şehirlerin ve insan yerleşimlerinin kapsayıcı, güvenli, dayanıklı ve sürdürülebilir hale getirilmesi hedeflenmektedir. Herkes için yeterli ve uygun fiyatlı konuta ve güvenli ulaşım sistemlerine erişimin sağlanması öngörülmektedir.</p></li>
+          <li style="--pc:var(--p2)"><button class="g" type="button" aria-expanded="false" data-sdg="sdg12"><span class="n">12</span><span class="gn">Sorumlu üretim ve tüketim</span><span class="pl" aria-hidden="true"></span></button><p class="gd" id="sdg12" hidden>Sürdürülebilir tüketim ve üretim kalıplarının yerleştirilmesi amaçlanmaktadır. Doğal kaynakların verimli kullanılması ve kişi başına düşen küresel gıda israfının yarıya indirilmesi hedefler arasındadır.</p></li>
+          <li style="--pc:var(--p2)"><button class="g" type="button" aria-expanded="false" data-sdg="sdg13"><span class="n">13</span><span class="gn">İklim eylemi</span><span class="pl" aria-hidden="true"></span></button><p class="gd" id="sdg13" hidden>İklim değişikliği ve etkileriyle mücadele için acil eylem alınması hedeflenmektedir. İklimle bağlantılı afetlere karşı dayanıklılığın güçlendirilmesi ve iklim önlemlerinin ulusal politika ve planlara entegre edilmesi öngörülmektedir.</p></li>
+          <li style="--pc:var(--p2)"><button class="g" type="button" aria-expanded="false" data-sdg="sdg14"><span class="n">14</span><span class="gn">Sudaki yaşam</span><span class="pl" aria-hidden="true"></span></button><p class="gd" id="sdg14" hidden>Okyanusların, denizlerin ve deniz kaynaklarının korunması ve sürdürülebilir biçimde kullanılması amaçlanmaktadır. Deniz kirliliğinin azaltılması ve aşırı avlanmanın sona erdirilmesi hedefler arasındadır.</p></li>
+          <li style="--pc:var(--p2)"><button class="g" type="button" aria-expanded="false" data-sdg="sdg15"><span class="n">15</span><span class="gn">Karasal yaşam</span><span class="pl" aria-hidden="true"></span></button><p class="gd" id="sdg15" hidden>Karasal ekosistemlerin korunması, ormanların sürdürülebilir yönetimi, çölleşmeyle mücadele ve biyolojik çeşitlilik kaybının durdurulması hedeflenmektedir. Arazi bozulmasının durdurulması ve tersine çevrilmesi öngörülmektedir.</p></li>
+          <li style="--pc:var(--p4)"><button class="g" type="button" aria-expanded="false" data-sdg="sdg16"><span class="n">16</span><span class="gn">Barış, adalet ve güçlü kurumlar</span><span class="pl" aria-hidden="true"></span></button><p class="gd" id="sdg16" hidden>Barışçıl ve kapsayıcı toplumların desteklenmesi, herkes için adalete erişimin sağlanması ve etkili, hesap verebilir kurumların oluşturulması amaçlanmaktadır. Şiddetin, yolsuzluğun ve rüşvetin önemli ölçüde azaltılması hedefler arasındadır.</p></li>
+          <li style="--pc:var(--p5)"><button class="g" type="button" aria-expanded="false" data-sdg="sdg17"><span class="n">17</span><span class="gn">Amaçlar için ortaklıklar</span><span class="pl" aria-hidden="true"></span></button><p class="gd" id="sdg17" hidden>Uygulama araçlarının güçlendirilmesi ve sürdürülebilir kalkınma için küresel ortaklığın canlandırılması hedeflenmektedir. Finansman, teknoloji, kapasite geliştirme ve ticaret alanlarında uluslararası işbirliğinin artırılması öngörülmektedir.</p></li>
         </ol>
         <div class="fivep" aria-label="Gündemin beş ilkesi">
           <span style="--pc:var(--p1)"><i></i>İnsan</span>
@@ -882,6 +900,26 @@ const mq=matchMedia("(prefers-color-scheme: dark)");
 const recolor=()=>{readColors();if(reduce)draw(0);};
 mq.addEventListener?mq.addEventListener("change",recolor):mq.addListener(recolor);
 new MutationObserver(recolor).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme","class"]});
+
+(function(){
+  const list=document.querySelector(".goals"); if(!list)return;
+  const tiles=[...list.querySelectorAll("li")];
+  const box=document.createElement("li"); box.className="gdetail"; box.hidden=true; box.setAttribute("role","region");
+  box.innerHTML='<p class="gdt"></p><p class="gdx"></p>';
+  function close(){tiles.forEach(t=>{t.classList.remove("open");t.querySelector(".g").setAttribute("aria-expanded","false");});box.hidden=true;box.remove();}
+  function open(li){
+    close();
+    li.classList.add("open"); li.querySelector(".g").setAttribute("aria-expanded","true");
+    const top=li.offsetTop; let last=li;
+    tiles.forEach(t=>{if(t.offsetTop===top)last=t;});
+    box.style.setProperty("--pc",li.style.getPropertyValue("--pc"));
+    box.querySelector(".gdt").textContent=li.querySelector(".n").textContent+" · "+li.querySelector(".gn").textContent;
+    box.querySelector(".gdx").textContent=li.querySelector(".gd").textContent;
+    last.after(box); box.hidden=false;
+  }
+  tiles.forEach(li=>li.querySelector(".g").addEventListener("click",()=>{li.classList.contains("open")?close():open(li);}));
+  addEventListener("resize",()=>{const o=list.querySelector("li.open");if(o)open(o);});
+})();
 
 function start(){
   readColors();resize();
