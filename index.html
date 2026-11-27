@@ -141,6 +141,8 @@ details.mdl>summary::-webkit-details-marker{display:none}
 details.mdl>summary:focus-visible{outline:2px solid var(--ec);outline-offset:3px}
 details.mdl>summary h3{margin:0}
 details.mdl>summary:hover h3{color:var(--fg)}
+details.crit>summary:hover h3{color:var(--crit)}
+details.crit:not([open])>summary{padding:0}
 details.mdl[open]>summary{margin-bottom:12px}
 .hint{text-transform:none;letter-spacing:0;font:500 12.5px var(--font-b);color:var(--muted)}
 .chev{flex:none;width:9px;height:9px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg);transition:transform .25s;margin-right:2px}
@@ -304,11 +306,11 @@ details.mdl[open]>ul,details.mdl[open]>.models{animation:drop .4s cubic-bezier(.
                 <p>Kalkınmanın itici gücü, girişimcinin geliştirdiği yeni ürün, yöntem ve pazarlardır. Bu yaklaşım içsel büyüme teorilerine ve yenilik politikalarına kaynaklık etmiştir.</p></div>
             </div>
           </details>
-          <section class="crit"><h3>Eleştiriler ve sınırlılıklar</h3><ul>
+          <details class="mdl crit"><summary><h3><span class="chev" aria-hidden="true"></span>Eleştiriler ve sınırlılıklar <span class="hint">(detaylar için tıklayınız)</span></h3></summary><ul>
             <li>Klasik kuramlar tüm ülkelerin aynı mekanizmalarla büyüyeceğini varsaymış; yapısal farklılıkları ve sömürge ilişkilerini göz ardı etmiştir.</li>
             <li>Serbest ticaretin sanayileşmede geride kalan ülkelere de kazanç sağlayacağı varsayımı, List ve daha sonra yapısalcılar tarafından sorgulanmıştır.</li>
             <li>Kalkınma ayrı bir sorun alanı olarak değil, zenginleşmenin kendiliğinden ortaya çıkan bir sonucu olarak ele alınmıştır.</li>
-          </ul></section>
+          </ul></details>
           <p class="turn"><b>Kırılma noktası:</b> Büyük Buhran ve İkinci Dünya Savaşı, piyasanın kendiliğinden kalkınma sağlayacağı inancını sarsmıştır. Keynesçi yaklaşım devlete ekonomide etkin bir rol yüklemiştir.</p>
         </div>
       </article>
@@ -353,12 +355,12 @@ details.mdl[open]>ul,details.mdl[open]>.models{animation:drop .4s cubic-bezier(.
                 <p class="key"><b>Not:</b> Prebisch ve ECLAC sıklıkla Bağımlılık Okulu ile karıştırılmaktadır. Bağımlılık Okulu, yapısalcılığın 1960'larda radikalleşen ayrı bir koludur.</p></div>
             </div>
           </details>
-          <section class="crit"><h3>Eleştiriler</h3><ul>
+          <details class="mdl crit"><summary><h3><span class="chev" aria-hidden="true"></span>Eleştiriler <span class="hint">(detaylar için tıklayınız)</span></h3></summary><ul>
             <li><b>Sermaye birikimine aşırı odaklanma:</b> Harrod–Domar yaklaşımında yatırım büyümenin tek belirleyicisi olarak ele alınmış; beşeri sermaye, teknoloji ve kurumlar ihmal edilmiştir.</li>
             <li><b>Marshall Planı deneyiminin genellenmesi:</b> Kurumları ve nitelikli işgücü hazır olan Avrupa'daki başarının, bu unsurlardan yoksun ülkelere aktarılabileceği varsayılmıştır.</li>
             <li><b>Planlama kapasitesinin abartılması:</b> Devletin bilgi ve uygulama kapasitesi olduğundan yüksek değerlendirilmiş, devlet başarısızlığı olasılığı dikkate alınmamıştır.</li>
             <li><b>Ampirik tartışmalar:</b> Prebisch–Singer tezine ilişkin ticaret hadleri bulgularının veri ve dönem seçimine duyarlı olduğu ileri sürülmüştür.</li>
-          </ul></section>
+          </ul></details>
           <p class="turn"><b>Kırılma noktası:</b> Yeni bağımsız ülkeler bu yaklaşımları 1950'lerde ulusal kalkınma planlarına ve ithal ikameci stratejilere dönüştürmüştür.</p>
         </div>
       </article>
@@ -438,14 +440,14 @@ details.mdl[open]>ul,details.mdl[open]>.models{animation:drop .4s cubic-bezier(.
                 <p>Wallerstein'a göre tek bir kapitalist dünya ekonomisi merkez, yarı çevre ve çevreden oluşmaktadır. Ülkeler bu hiyerarşi içinde konum değiştirebilir; ancak sistem hiyerarşinin kendisini sürekli yeniden üretir.</p></div>
             </div>
           </details>
-          <section class="crit"><h3>Eleştiriler</h3><ul>
+          <details class="mdl crit"><summary><h3><span class="chev" aria-hidden="true"></span>Eleştiriler <span class="hint">(detaylar için tıklayınız)</span></h3></summary><ul>
             <li><b>İthal ikamesinin tıkanması:</b> Kolay aşamanın ardından ara ve yatırım malı ithalatı artmıştır. Kronik döviz darboğazı ve ödemeler dengesi krizleri, ekonomilerde dur-kalk döngülerine yol açmıştır.</li>
             <li><b>Verimsizlik ve rant:</b> Korumacılık, küçük ölçekli ve ihracat yapamayan sanayilerin oluşmasına ve rant arayışına neden olmuştur. Aşırı değerli kur tarımı ve ihracatı dolaylı olarak vergilendirmiştir.</li>
             <li><b>Kentsel yanlılık:</b> Lipton'a göre tarımın ihmal edilmesi gıda sorunlarına, kırdan kente göçe ve kentlerde kayıt dışı yoksulluğa yol açmıştır.</li>
             <li><b>Lewis modelinin sınırlılıkları:</b> Tarımda sıfır marjinal verimlilik varsayımı ampirik olarak tartışmalı bulunmuştur. Harris ve Todaro (1970), kentlerdeki işsizliğe rağmen göçün neden sürdüğünü beklenen gelir kavramıyla açıklamıştır.</li>
             <li><b>Modernleşme kuramına yönelik eleştiriler:</b> Rostow'un şeması doğrusal, Avrupa merkezli ve dış ilişkileri göz ardı eden bir yaklaşım olarak eleştirilmiştir.</li>
             <li><b>Bağımlılık Okulunun açmazı:</b> Okul, Güney Kore ve Tayvan'ın dünya pazarıyla bütünleşerek başarılı olmasını açıklayamamış; sistemden kopuş önerisi gerçekçi bulunmamıştır.</li>
-          </ul></section>
+          </ul></details>
           <p class="turn"><b>Kırılma noktası:</b> Büyüme oranları yüksek seyretmiş, ancak yoksulluk, işsizlik ve eşitsizlik azalmamıştır. 1970'lerde odak büyümeden bölüşüme kaymıştır.</p>
         </div>
       </article>
@@ -495,12 +497,12 @@ details.mdl[open]>ul,details.mdl[open]>.models{animation:drop .4s cubic-bezier(.
                 <p>ILO'nun Kenya raporu, kentlerde resmî istihdamın dışında kalan geniş bir küçük üretim ve hizmet alanını tanımlamıştır. Kayıt dışılık bu tarihten itibaren kalkınma iktisadının kalıcı konularından biri haline gelmiştir.</p></div>
             </div>
           </details>
-          <section class="crit"><h3>Eleştiriler</h3><ul>
+          <details class="mdl crit"><summary><h3><span class="chev" aria-hidden="true"></span>Eleştiriler <span class="hint">(detaylar için tıklayınız)</span></h3></summary><ul>
             <li><b>Üretim kapasitesinin ihmali:</b> Temel ihtiyaçlar yaklaşımı tüketimi ön plana çıkardığı, büyümeyi ve sanayileşmeyi ikinci planda bıraktığı gerekçesiyle eleştirilmiştir.</li>
             <li><b>Yukarıdan aşağı yaklaşım:</b> İhtiyaçların dışarıdan tanımlanması eleştiri konusu olmuştur. Bazı gelişmekte olan ülkeler bu yaklaşımı gelişmiş ülkelerin sanayileşmeyi sınırlama girişimi olarak değerlendirmiştir.</li>
             <li><b>Proje temelli yaklaşımın sınırlılıkları:</b> Kırsal kalkınma projeleri yüksek maliyetli olmuş, geniş ölçekte uygulanamamış ve yönetişim sorunlarıyla karşılaşmıştır.</li>
             <li><b>Kırılgan finansman yapısı:</b> Borçla finanse edilen büyüme, dış faiz ve emtia fiyatı şoklarına karşı savunmasız kalmıştır.</li>
-          </ul></section>
+          </ul></details>
           <p class="turn"><b>Kırılma noktası:</b> 1979 faiz şoku ve Meksika'nın 1982'de borç ödemelerini durdurması borç krizini başlatmıştır. Tartışmanın odağı yoksulluktan istikrar ve piyasa mekanizmasına kaymıştır. Lewis ve Schultz'un 1979'da Nobel Ödülü'nü paylaşması ise yüksek kalkınma teorisinin mirasını teyit etmiştir.</p>
         </div>
       </article>
@@ -559,14 +561,14 @@ details.mdl[open]>ul,details.mdl[open]>.models{animation:drop .4s cubic-bezier(.
                 <p class="key"><b>Önemi:</b> Rapor, Büyümenin Sınırları'ndan farklı olarak büyümeyi reddetmemiş; gelişmekte olan ülkelerin kalkınma hakkı ile çevrenin korunmasını uzlaştırmayı amaçlamıştır.</p></div>
             </div>
           </details>
-          <section class="crit"><h3>Eleştiriler</h3><ul>
+          <details class="mdl crit"><summary><h3><span class="chev" aria-hidden="true"></span>Eleştiriler <span class="hint">(detaylar için tıklayınız)</span></h3></summary><ul>
             <li><b>Sosyal maliyetler:</b> Sağlık ve eğitim harcamalarındaki kesintiler yoksulluğu artırmıştır. UNICEF'in <i>İnsani Yüzlü Uyum</i> (1987) raporu bu maliyetleri belgelemiştir.</li>
             <li><b>Beklenen büyümenin gerçekleşmemesi:</b> Afrika ve Latin Amerika'da durgunluk sürmüş, kayıp on yıl uzamıştır.</li>
             <li><b>Tek tip politika önerisi:</b> Ülkelerin özgün koşulları, kurumsal yapıları ve reformların uygulanma sırası göz ardı edilmiştir.</li>
             <li><b>Doğu Asya deneyiminin yorumlanması:</b> Güney Kore ve Tayvan'ın serbest piyasa politikalarıyla değil, yoğun devlet yönlendirmesiyle büyüdüğü ileri sürülmüştür.</li>
             <li><b>Finansal serbestleşmenin riskleri:</b> Bu riskler sonraki on yılda yaşanan krizlerle ortaya çıkmıştır. Kredi koşulluluğu ulusal egemenlik ve demokratik meşruiyet açısından da sorgulanmıştır.</li>
             <li><b>Sürdürülebilirlik kavramının belirsizliği:</b> Brundtland tanımı, farklı aktörlerin farklı biçimlerde yorumlayabildiği geniş bir uzlaşı kavramı olarak eleştirilmiştir.</li>
-          </ul></section>
+          </ul></details>
           <p class="turn"><b>Kırılma noktası:</b> Latin Amerika ve Afrika'da kayıp on yıl yaşanırken devletin yönlendirdiği Doğu Asya ekonomileri hızla büyümüştür. Bu durum, piyasa ile devlet arasındaki ilişkinin yeniden değerlendirilmesini zorunlu kılmıştır.</p>
         </div>
       </article>
@@ -618,13 +620,13 @@ details.mdl[open]>ul,details.mdl[open]>.models{animation:drop .4s cubic-bezier(.
                 <p>Bu yaklaşıma göre kalkınma, Batı'nın gelişmekte olan ülkeleri "az gelişmiş" olarak tanımlayarak kendi modelini yaygınlaştırdığı bir söylemdir. Escobar'ın <i>Kalkınmayla Karşılaşmak</i> ve Wolfgang Sachs'ın derlediği <i>Kalkınma Sözlüğü</i> adlı eserler yerel bilgiyi ve toplumsal hareketleri alternatif olarak öne çıkarmıştır.</p></div>
             </div>
           </details>
-          <section class="crit"><h3>Eleştiriler</h3><ul>
+          <details class="mdl crit"><summary><h3><span class="chev" aria-hidden="true"></span>Eleştiriler <span class="hint">(detaylar için tıklayınız)</span></h3></summary><ul>
             <li><b>Kurumsal yaklaşımın uygulanabilirliği:</b> Hangi kurumların hangi yöntemle oluşturulacağı belirsiz kalmıştır. İyi yönetişim gündemi gelişmekte olan ülkelere kapsamlı yeni koşullar getirmiştir; Grindle bu nedenle "yeterince iyi yönetişim" kavramını önermiştir.</li>
             <li><b>İnsani Gelişme Endeksi'nin sınırlılıkları:</b> Endeksin boyutlarının ağırlıklandırılması keyfi bulunmuş, gelir dağılımı ve çevresel sürdürülebilirlik başlangıçta kapsam dışında kalmıştır. Bu eleştiriler üzerine eşitsizliğe göre düzeltilmiş endeksler geliştirilmiştir.</li>
             <li><b>Kalkınmacı devlet modelinin aktarılabilirliği:</b> Doğu Asya'nın başarısının toprak reformu, Soğuk Savaş döneminde sağlanan dış destek ve güçlü bürokrasi gibi özgün tarihsel koşullara dayandığı ileri sürülmüştür.</li>
             <li><b>Kalkınma sonrası yaklaşımın sınırlılıkları:</b> Yaklaşım güçlü bir eleştiri sunmuş, ancak uygulanabilir somut bir alternatif ortaya koyamamıştır.</li>
             <li><b>Post-Washington Uzlaşması'nın sınırlılıkları:</b> Eleştirmenlere göre bu yaklaşım politika setini değiştirmekten çok genişletmiş, piyasa merkezli çerçeveyi korumuştur.</li>
-          </ul></section>
+          </ul></details>
           <p class="turn"><b>Kırılma noktası:</b> 1997 Asya krizi ve geçiş ekonomilerinin deneyimleri, tüm ülkelere aynı politika setinin önerilmesinin sınırlarını göstermiştir. 2000'li yıllarda daha temkinli, kanıta dayalı ve çoğulcu bir kalkınma iktisadı gelişmiştir.</p>
         </div>
       </article>
@@ -688,14 +690,14 @@ details.mdl[open]>ul,details.mdl[open]>.models{animation:drop .4s cubic-bezier(.
                 <p>2008 krizi ve COVID-19 salgını kalkınma kazanımlarının kırılganlığını ortaya koymuştur. Dijital dönüşüm mobil ödeme sistemleri ve e-devlet uygulamaları gibi fırsatlar sunarken dijital uçurum ve otomasyonun düşük ücret avantajını zayıflatması gibi riskler de taşımaktadır. Yapay zekânın istihdam üzerindeki etkisi yeni bir belirsizlik kaynağı oluşturmaktadır.</p></div>
             </div>
           </details>
-          <section class="crit"><h3>Eleştiriler</h3><ul>
+          <details class="mdl crit"><summary><h3><span class="chev" aria-hidden="true"></span>Eleştiriler <span class="hint">(detaylar için tıklayınız)</span></h3></summary><ul>
             <li><b>Alanın parçalanması:</b> Mikro düzeyde kanıta odaklanılması, yapısal dönüşüm ve sanayileşme gibi temel soruların gözden kaçırılması riskini doğurmaktadır.</li>
             <li><b>Kurumsal belirlenimcilik:</b> Tarihsel kurumlara verilen ağırlığın, kamu politikalarının dönüştürücü gücünü küçümsediği ileri sürülmektedir.</li>
             <li><b>SKA'ların kapsamı:</b> 17 amaç ve 169 hedeften oluşan yapı önceliklerin belirlenmesini güçleştirmektedir.</li>
             <li><b>Yeşil büyümenin hızı:</b> Emisyonların büyümeden mutlak olarak ayrışması, iklim hedeflerine ulaşmak için gereken hızda gerçekleşmemektedir.</li>
             <li><b>Sanayi politikasının riskleri:</b> Devlet başarısızlığı ve rant arayışı riskleri yeniden gündeme gelmektedir.</li>
             <li><b>Kuzey–Güney gerilimi:</b> İklim ve ticaret kurallarının gelişmekte olan ülkelerin politika alanını daralttığı yönünde eleştiriler bulunmaktadır.</li>
-          </ul></section>
+          </ul></details>
           <p class="turn"><b>Açık soru:</b> Kalkınmanın gezegenin sınırları içinde ve kapsayıcı biçimde nasıl sürdürüleceği, alanın temel sorusu olmaya devam etmektedir.</p>
         </div>
       </article>
@@ -723,11 +725,11 @@ details.mdl[open]>ul,details.mdl[open]>.models{animation:drop .4s cubic-bezier(.
               <li><span class="y">2024–28</span><span><b>On İkinci Kalkınma Planı</b>Plan, dijital ve yeşil dönüşümü birlikte ele alan ikiz dönüşüm yaklaşımını benimsemekte; SKDM'ye uyumu ve 2053 net sıfır emisyon hedefini öncelikleri arasında saymaktadır.<span class="link">↔ İklim ve dijital dönüşüm</span></span></li>
             </ol>
           </section>
-          <section class="crit"><h3>Eleştiriler ve değerlendirme</h3><ul>
+          <details class="mdl crit"><summary><h3><span class="chev" aria-hidden="true"></span>Eleştiriler ve değerlendirme <span class="hint">(detaylar için tıklayınız)</span></h3></summary><ul>
             <li><b>Planların bağlayıcılığı:</b> 1980 sonrasında kalkınma planlarının yönlendirici etkisi azalmıştır.</li>
             <li><b>Tasarruf ve cari açık kısıtı:</b> Büyüme dönemleri sıklıkla dış finansman koşullarının bozulmasıyla sona ermiştir.</li>
             <li><b>Teknoloji yoğunluğu:</b> İhracat ağırlıklı olarak orta-düşük teknolojili ürünlerde yoğunlaşmıştır.</li>
-          </ul></section>
+          </ul></details>
         </div>
       </article>
 
