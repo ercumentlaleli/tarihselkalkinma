@@ -1,0 +1,896 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+html{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font:14px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+<title>Kalkınmanın Ağacı</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Düzen: solda sabit zaman çizelgesi, ortada geniş ve üst üste kayan dönem pencereleri, sağda kaydırdıkça büyüyen ağaç */
+:root{
+  --bg:#ecf0ea; --surface:#fafcf8; --fg:#14201a; --muted:#56655b; --line:#d0dad1; --accent:#2b7746; --crit:#b0452d;
+  --bark:#5a4536; --twig:#6d6a3d; --leaf1:#3f9955; --leaf2:#72b25a; --leaf3:#2a7142; --fruit:#d38f1b; --ground:#cdd7c8;
+  --e1:#6b7280; --e2:#3566cc; --e3:#23857f; --e4:#a94f27; --e5:#9e3358; --e6:#6748bd; --e7:#2b7636; --e8:#a87a06;
+  --p1:#c0532d; --p2:#2b7746; --p3:#c28a14; --p4:#3566cc; --p5:#7d4fb8;
+  --font-d:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --font-b:"Public Sans","Segoe UI",system-ui,sans-serif;
+  --font-m:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  --railw:210px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1511; --surface:#16201a; --fg:#e2eae3; --muted:#93a398; --line:#27332a; --accent:#6fcf8a; --crit:#ec8a6a;
+    --bark:#9b826b; --twig:#8e8a5a; --leaf1:#4fae66; --leaf2:#7cc56a; --leaf3:#2f7f49; --fruit:#e8a93a; --ground:#1c291f;
+    --e1:#a2a9b5; --e2:#7da3f5; --e3:#4fc0b9; --e4:#e2895c; --e5:#e3799f; --e6:#a78ff0; --e7:#6dc47b; --e8:#e2b443;
+    --p1:#ea8460; --p2:#6fcf8a; --p3:#e8b545; --p4:#7da3f5; --p5:#b393ee;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1511; --surface:#16201a; --fg:#e2eae3; --muted:#93a398; --line:#27332a; --accent:#6fcf8a; --crit:#ec8a6a;
+  --bark:#9b826b; --twig:#8e8a5a; --leaf1:#4fae66; --leaf2:#7cc56a; --leaf3:#2f7f49; --fruit:#e8a93a; --ground:#1c291f;
+  --e1:#a2a9b5; --e2:#7da3f5; --e3:#4fc0b9; --e4:#e2895c; --e5:#e3799f; --e6:#a78ff0; --e7:#6dc47b; --e8:#e2b443;
+  --p1:#ea8460; --p2:#6fcf8a; --p3:#e8b545; --p4:#7da3f5; --p5:#b393ee;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-b);font-size:16px;line-height:1.6}
+#tree{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.stage{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:1;
+  font:500 11px var(--font-m);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:right}
+.stage b{color:var(--accent);font-weight:500}
+
+/* Zaman çizelgesi */
+.rail{position:fixed;left:0;top:0;bottom:0;width:var(--railw);z-index:3;
+  padding:calc(28px + env(safe-area-inset-top,0px)) 12px calc(28px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px))}
+.rail ol{position:relative;list-style:none;margin:0;padding:0;height:100%;display:flex;flex-direction:column;justify-content:space-between}
+.rail .track,.rail .fill{position:absolute;left:6px;top:20px;bottom:20px;width:2px;border-radius:2px}
+.rail .track{background:var(--line)}
+.rail .fill{background:var(--accent);transform-origin:top;transform:scaleY(0)}
+.rail li{position:relative;height:40px;display:flex;align-items:center}
+.rail a{display:flex;align-items:center;gap:12px;color:var(--muted);text-decoration:none;width:100%;border-radius:6px;padding:2px 4px 2px 0}
+.rail a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.rail .dot{flex:none;width:14px;height:14px;border-radius:50%;background:var(--bg);border:2px solid var(--line);transition:transform .25s,background .25s,border-color .25s}
+.rail .lbl{display:grid;line-height:1.2;min-width:0}
+.rail .yr{font:500 10.5px var(--font-m);letter-spacing:.04em}
+.rail .nm{font:500 13px var(--font-b);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rail li.past .dot{background:var(--c);border-color:var(--c)}
+.rail li.on .dot{background:var(--c);border-color:var(--c);transform:scale(1.35)}
+.rail li.on a{color:var(--fg)}
+.rail li.on .nm{font-weight:600}
+.rail a:hover{color:var(--fg)}
+
+/* İçerik sütunu */
+main{position:relative;z-index:2;padding-left:calc(var(--railw) + max(16px,env(safe-area-inset-left,0px)));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.col{max-width:1040px}
+.mark{height:0}
+
+/* Açılış */
+.hero{min-height:100svh;display:grid;align-content:center;gap:28px;padding-block:48px 72px}
+.kick{font:500 12px var(--font-m);letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0}
+.hero h1{font:800 clamp(2.6rem,6.4vw,5rem)/0.98 var(--font-d);letter-spacing:-.02em;margin:6px 0 0;text-wrap:balance}
+.hero .sub{font-size:1.1rem;color:var(--muted);max-width:60ch;margin:14px 0 0}
+.defs{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.def{background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(6px);border:1px solid var(--line);border-radius:12px;padding:14px 16px;min-width:0}
+.def .src{font:500 11px var(--font-m);letter-spacing:.05em;color:var(--muted);text-transform:uppercase}
+.def p{margin:6px 0 0;font-size:.95rem;line-height:1.5}
+.sdg{display:grid;gap:12px}
+.sdg-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 16px}
+.sdg-head h2{font:700 1.15rem var(--font-d);margin:0}
+.nums{display:flex;flex-wrap:wrap;gap:4px 14px;font:500 12px var(--font-m);color:var(--muted)}
+.nums b{color:var(--fg);font-weight:500}
+.goals{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:6px}
+.goals li{display:flex;gap:8px;align-items:baseline;font-size:.82rem;line-height:1.3;padding:7px 9px;border-radius:8px;
+  background:color-mix(in srgb,var(--surface) 86%,transparent);border-left:3px solid var(--pc)}
+.goals .n{font:500 11px var(--font-m);color:var(--pc);min-width:1.6em;font-variant-numeric:tabular-nums}
+.fivep{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.8rem;color:var(--muted)}
+.fivep span{display:inline-flex;align-items:center;gap:6px}
+.fivep i{width:10px;height:10px;border-radius:2px;background:var(--pc)}
+.cue{display:flex;align-items:center;gap:10px;font:500 12px var(--font-m);letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+.cue svg{width:16px;height:16px;stroke:var(--accent);animation:bob 2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(4px)}}
+
+/* Kayan pencereler */
+.stack{padding-bottom:12vh}
+.card{position:sticky;top:calc(24px + var(--i) * 7px);margin-bottom:30vh;
+  background:color-mix(in srgb,var(--surface) 90%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1px solid var(--line);border-radius:16px;box-shadow:0 18px 40px -24px color-mix(in srgb,var(--fg) 45%,transparent);
+  overflow:hidden;transform-origin:50% 50%;transform:scale(calc(1 - var(--cov,0) * .04));--cov:0}
+.card::after{content:"";position:absolute;inset:0;background:var(--bg);opacity:calc(var(--cov) * .6);pointer-events:none}
+.card:last-child{margin-bottom:10vh}
+.chrome{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 24px;border-bottom:1px solid var(--line);
+  background:color-mix(in srgb,var(--ec) 13%,transparent);font:500 12px var(--font-m);letter-spacing:.05em}
+.chrome .yrs{color:var(--ec)}
+.chrome .pos{color:var(--muted);font-variant-numeric:tabular-nums}
+.body{padding:26px 28px 28px;display:grid;gap:26px}
+.card h2{font:700 clamp(1.7rem,3.4vw,2.6rem)/1.06 var(--font-d);letter-spacing:-.01em;margin:0;text-wrap:balance}
+.intro{display:grid;gap:12px;max-width:80ch}
+.intro p{margin:0;font-size:1.02rem}
+.intro p:first-child{font-size:1.1rem}
+.card h3{font:500 11.5px var(--font-m);letter-spacing:.1em;text-transform:uppercase;color:var(--ec);margin:0 0 10px;display:flex;align-items:center;gap:10px}
+.card h3::after{content:"";flex:1;height:1px;background:var(--line)}
+.duo{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px 36px}
+.duo>section,.body>section{min-width:0}
+.card ul{margin:0;padding:0;list-style:none;display:grid;gap:9px}
+.card ul li{position:relative;padding-left:17px;font-size:.94rem;line-height:1.5}
+.card ul li::before{content:"";position:absolute;left:0;top:.62em;width:7px;height:7px;border-radius:50%;background:var(--ec)}
+.card ul li b{font-weight:600}
+.models{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:12px}
+.model{border:1px solid var(--line);border-radius:11px;padding:14px 16px;background:color-mix(in srgb,var(--ec) 5%,var(--surface));display:grid;gap:7px;align-content:start;min-width:0}
+.model.wide{grid-column:1/-1}
+.mh{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 12px;align-items:baseline}
+.mh b{font:700 1.02rem/1.25 var(--font-d)}
+.by{font:500 11px var(--font-m);color:var(--ec);white-space:nowrap}
+.model p{margin:0;font-size:.9rem;line-height:1.55}
+.eq{font:500 13px var(--font-m);background:color-mix(in srgb,var(--ec) 12%,transparent);padding:4px 9px;border-radius:6px;justify-self:start}
+.key{font-size:.85rem!important;color:var(--muted)}
+.key b{color:var(--fg);font-weight:600}
+.grp{font:700 1.05rem var(--font-d);margin:6px 0 2px;grid-column:1/-1;color:var(--fg)}
+.grp span{font:500 11px var(--font-m);color:var(--muted);margin-left:8px}
+details.mdl>summary{list-style:none;cursor:pointer;border-radius:8px;padding:4px 0}
+details.mdl>summary::-webkit-details-marker{display:none}
+details.mdl>summary:focus-visible{outline:2px solid var(--ec);outline-offset:3px}
+details.mdl>summary h3{margin:0}
+details.mdl>summary:hover h3{color:var(--fg)}
+details.mdl[open]>summary{margin-bottom:12px}
+.hint{text-transform:none;letter-spacing:0;font:500 12.5px var(--font-b);color:var(--muted)}
+.chev{flex:none;width:9px;height:9px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg);transition:transform .25s;margin-right:2px}
+details.mdl[open] .chev{transform:rotate(45deg)}
+details.mdl[open]>.models{animation:drop .4s cubic-bezier(.2,.7,.2,1)}
+@keyframes drop{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+.crit{border-radius:12px;padding:16px 18px;background:color-mix(in srgb,var(--crit) 7%,transparent);border:1px solid color-mix(in srgb,var(--crit) 28%,var(--line))}
+.crit h3{color:var(--crit)}
+.crit ul li::before{background:none;border:1.5px solid var(--crit);border-radius:2px;transform:rotate(45deg);width:6px;height:6px}
+.turn{margin:0;padding-top:16px;border-top:1px dashed var(--line);font-size:.95rem;color:var(--muted)}
+.turn b{color:var(--fg);font-weight:600}
+.tl{list-style:none;margin:0;padding:0;display:grid}
+.tl li{display:grid;grid-template-columns:6.4em 1fr;gap:16px;padding:12px 0;border-bottom:1px solid var(--line);font-size:.93rem;line-height:1.5}
+.tl li:last-child{border-bottom:0}
+.tl .y{font:500 13px var(--font-m);color:var(--ec);font-variant-numeric:tabular-nums}
+.tl b{display:block;font:700 1rem var(--font-d);margin-bottom:2px}
+.tl .link{display:inline-block;margin-top:4px;font:500 11px var(--font-m);color:var(--muted)}
+.qs{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.qs div{border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.qs b{display:block;font:700 1.08rem var(--font-d);margin-bottom:4px}
+.qs span{font-size:.9rem;color:var(--muted)}
+.btn{justify-self:start;display:inline-flex;align-items:center;gap:8px;font:600 .95rem var(--font-b);color:var(--surface);background:var(--accent);
+  padding:10px 16px;border-radius:9px;text-decoration:none}
+.btn:focus-visible{outline:2px solid var(--fg);outline-offset:3px}
+
+.card.in .body>*{animation:rise .7s cubic-bezier(.2,.7,.2,1) both}
+.card.in .body>*:nth-child(2){animation-delay:.08s}
+.card.in .body>*:nth-child(3){animation-delay:.16s}
+.card.in .body>*:nth-child(n+4){animation-delay:.24s}
+@keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+
+@media (max-width:820px){
+  :root{--railw:34px}
+  .rail{padding-right:0}
+  .rail .lbl{display:none}
+  .rail li{height:30px}
+  .rail .track,.rail .fill{top:15px;bottom:15px}
+  .body{padding:20px 18px 22px;gap:22px}
+  .chrome{padding:9px 18px}
+  .stage{display:none}
+  .tl li{grid-template-columns:1fr;gap:2px}
+}
+@media (prefers-reduced-motion: reduce){
+  .card.in .body>*{animation:none}
+  .cue svg{animation:none}
+  details.mdl[open]>.models{animation:none}
+  .chev{transition:none}
+  .card{transform:none}
+}
+</style>
+</head>
+<body>
+
+<canvas id="tree" aria-hidden="true"></canvas>
+<div class="stage" aria-hidden="true">Ağaç · <b id="stageName">Tohum</b></div>
+
+<nav class="rail" aria-label="Dönemler">
+  <ol>
+    <span class="track"></span><span class="fill" id="fill"></span>
+    <li style="--c:var(--accent)"><a href="#giris"><span class="dot"></span><span class="lbl"><span class="yr">Tanımlar</span><span class="nm">Kalkınma nedir?</span></span></a></li>
+    <li style="--c:var(--e1)"><a href="#kokler"><span class="dot"></span><span class="lbl"><span class="yr">1776–1940</span><span class="nm">Düşünsel kökler</span></span></a></li>
+    <li style="--c:var(--e2)"><a href="#d1940"><span class="dot"></span><span class="lbl"><span class="yr">1940'lar</span><span class="nm">Doğuş ve yapısalcılık</span></span></a></li>
+    <li style="--c:var(--e3)"><a href="#d1950"><span class="dot"></span><span class="lbl"><span class="yr">1950–60'lar</span><span class="nm">Yüksek kalkınma teorisi</span></span></a></li>
+    <li style="--c:var(--e4)"><a href="#d1970"><span class="dot"></span><span class="lbl"><span class="yr">1970'ler</span><span class="nm">Büyümeden bölüşüme</span></span></a></li>
+    <li style="--c:var(--e5)"><a href="#d1980"><span class="dot"></span><span class="lbl"><span class="yr">1980'ler</span><span class="nm">Piyasa ve sürdürülebilirlik</span></span></a></li>
+    <li style="--c:var(--e6)"><a href="#d1990"><span class="dot"></span><span class="lbl"><span class="yr">1990'lar</span><span class="nm">Kurumlar ve insan</span></span></a></li>
+    <li style="--c:var(--e7)"><a href="#d2000"><span class="dot"></span><span class="lbl"><span class="yr">2000–günümüz</span><span class="nm">Güncel tartışmalar</span></span></a></li>
+    <li style="--c:var(--e8)"><a href="#turkiye"><span class="dot"></span><span class="lbl"><span class="yr">1923–2028</span><span class="nm">Türkiye</span></span></a></li>
+    <li style="--c:var(--accent)"><a href="#kapanis"><span class="dot"></span><span class="lbl"><span class="yr">Günümüz</span><span class="nm">Açık sorular</span></span></a></li>
+  </ol>
+</nav>
+
+<main>
+  <div class="col">
+    <div class="mark" id="giris"></div>
+    <section class="hero">
+      <div>
+        <p class="kick">Kalkınma İktisadı · 1776'dan günümüze</p>
+        <h1>Kalkınma nedir?</h1>
+        <p class="sub">Kalkınma iktisadı, üretim kapasitesindeki artışın toplumun refahına nasıl yansıdığını yaklaşık seksen yıldır farklı kuramsal çerçevelerle incelemektedir.</p>
+      </div>
+      <div class="defs">
+        <div class="def"><span class="src">Temel ayrım</span><p><b>Büyüme</b>, kişi başına üretimin artmasını ifade eder. <b>Kalkınma</b> ise bu artışa üretim yapısının, kurumların ve yaşam koşullarının dönüşümünün eşlik etmesini ifade eder.</p></div>
+        <div class="def"><span class="src">Dudley Seers, 1969</span><p>Seers'e göre kalkınma, yoksulluk, işsizlik ve eşitsizlikte sağlanan azalma ile ölçülmelidir.</p></div>
+        <div class="def"><span class="src">Amartya Sen, 1999</span><p>Sen, kalkınmayı insanların değer verdikleri yaşamı sürdürebilme <b>özgürlüklerinin genişlemesi</b> olarak tanımlar.</p></div>
+        <div class="def"><span class="src">Brundtland Raporu, 1987</span><p>Sürdürülebilir kalkınma, bugünün ihtiyaçlarının gelecek kuşakların kendi ihtiyaçlarını karşılama olanağından ödün verilmeden karşılanmasıdır.</p></div>
+      </div>
+      <div class="sdg">
+        <div class="sdg-head">
+          <h2>BM 2030 Gündemi: Sürdürülebilir Kalkınma Amaçları</h2>
+          <div class="nums"><span><b>2015</b> kabul</span><span><b>193</b> ülke</span><span><b>17</b> amaç</span><span><b>169</b> hedef</span></div>
+        </div>
+        <ol class="goals">
+          <li style="--pc:var(--p1)"><span class="n">01</span>Yoksulluğa son</li>
+          <li style="--pc:var(--p1)"><span class="n">02</span>Açlığa son</li>
+          <li style="--pc:var(--p1)"><span class="n">03</span>Sağlıklı bireyler</li>
+          <li style="--pc:var(--p1)"><span class="n">04</span>Nitelikli eğitim</li>
+          <li style="--pc:var(--p1)"><span class="n">05</span>Toplumsal cinsiyet eşitliği</li>
+          <li style="--pc:var(--p2)"><span class="n">06</span>Temiz su ve sanitasyon</li>
+          <li style="--pc:var(--p3)"><span class="n">07</span>Erişilebilir ve temiz enerji</li>
+          <li style="--pc:var(--p3)"><span class="n">08</span>İnsana yakışır iş ve ekonomik büyüme</li>
+          <li style="--pc:var(--p3)"><span class="n">09</span>Sanayi, yenilikçilik ve altyapı</li>
+          <li style="--pc:var(--p3)"><span class="n">10</span>Eşitsizliklerin azaltılması</li>
+          <li style="--pc:var(--p3)"><span class="n">11</span>Sürdürülebilir şehirler ve topluluklar</li>
+          <li style="--pc:var(--p2)"><span class="n">12</span>Sorumlu üretim ve tüketim</li>
+          <li style="--pc:var(--p2)"><span class="n">13</span>İklim eylemi</li>
+          <li style="--pc:var(--p2)"><span class="n">14</span>Sudaki yaşam</li>
+          <li style="--pc:var(--p2)"><span class="n">15</span>Karasal yaşam</li>
+          <li style="--pc:var(--p4)"><span class="n">16</span>Barış, adalet ve güçlü kurumlar</li>
+          <li style="--pc:var(--p5)"><span class="n">17</span>Amaçlar için ortaklıklar</li>
+        </ol>
+        <div class="fivep" aria-label="Gündemin beş ilkesi">
+          <span style="--pc:var(--p1)"><i></i>İnsan</span>
+          <span style="--pc:var(--p2)"><i></i>Gezegen</span>
+          <span style="--pc:var(--p3)"><i></i>Refah</span>
+          <span style="--pc:var(--p4)"><i></i>Barış</span>
+          <span style="--pc:var(--p5)"><i></i>Ortaklık</span>
+        </div>
+      </div>
+      <div class="cue"><svg viewBox="0 0 16 16" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l5 5 5-5"/></svg>Sayfa aşağı kaydırıldıkça fidan büyür ve dönemler sırayla açılır</div>
+    </section>
+
+    <div class="stack">
+
+<!-- ============ 1. DÜŞÜNSEL KÖKLER ============ -->
+      <div class="mark" id="kokler"></div>
+      <article class="card" style="--i:0;--ec:var(--e1)">
+        <header class="chrome"><span class="yrs">1776 – 1940</span><span class="pos">01 / 08</span></header>
+        <div class="body">
+          <h2>Düşünsel Kökler</h2>
+          <div class="intro">
+            <p>Kalkınma iktisadı 1940'larda ayrı bir alan olarak ortaya çıkmıştır; ancak ele aldığı temel soru iktisat biliminin kendisi kadar eskidir: Ulusların zenginleşmesini belirleyen etkenler nelerdir? Adam Smith <i>Ulusların Zenginliği</i> (1776) adlı eserinde servetin kaynağını altın stokunda değil, emeğin üretkenliğinde aramıştır. Smith'e göre bu üretkenliği iş bölümü, iş bölümünün derinliğini ise piyasanın genişliği belirlemektedir. Klasik iktisatçılar büyümeyi, üretilen artığın yeniden yatırıma dönüştürülmesi süreci olarak değerlendirmiştir.</p>
+            <p>19. yüzyılda bu iyimser yaklaşıma yönelik önemli itirazlar geliştirilmiştir. Marx, sermaye birikiminin sınıf ilişkileri içinde gerçekleştiğini ve kapitalizmin dünya ölçeğinde eşitsiz biçimde yayıldığını vurgulamıştır. List, İngiltere'nin savunduğu serbest ticaret politikasının sanayileşmede geride kalan ülkelerin aleyhine işlediğini ileri sürmüştür. Schumpeter ise kalkınmayı, yeniliğin mevcut yapıları dönüştürerek yenilerini oluşturduğu dinamik bir süreç olarak tanımlamıştır. Sonraki dönemlerin tartışmalarının temelleri bu dönemde atılmıştır.</p>
+          </div>
+          <div class="duo">
+            <section><h3>Tarihsel arka plan</h3><ul>
+              <li><b>Sanayi Devrimi:</b> İngiltere'nin öncülüğünde fabrika sistemi yaygınlaşmış ve üretkenlik hızla artmıştır.</li>
+              <li><b>Geç sanayileşme:</b> 19. yüzyılda Almanya, ABD ve Japonya korumacılık ve devlet desteğiyle İngiltere'yi yakalamıştır.</li>
+              <li><b>Sömürge düzeni:</b> Çevre ülkelerin hammadde, merkez ülkelerin sanayi malı ürettiği bir uluslararası iş bölümü oluşmuştur.</li>
+              <li><b>1929 Büyük Buhranı:</b> Keynes, piyasaların kendiliğinden tam istihdama ulaşmadığını ortaya koymuştur.</li>
+              <li><b>Sovyet planlaması:</b> 1928'den itibaren uygulanan planlı ve hızlı sanayileşme, alternatif bir model olarak değerlendirilmiştir.</li>
+            </ul></section>
+            <section><h3>Ana temalar</h3><ul>
+              <li>Zenginliğin kaynağının emeğin üretkenliği olduğu kabul edilmiştir.</li>
+              <li>Sermaye birikimi ve artığın yeniden yatırımı büyümenin temel itici gücü olarak görülmüştür.</li>
+              <li>Serbest ticaretin tüm ülkelere kazanç sağlayıp sağlamadığı tartışılmıştır.</li>
+              <li>Teknolojik yenilik ekonomik dönüşümün kaynağı olarak tanımlanmıştır.</li>
+            </ul></section>
+          </div>
+          <details class="mdl"><summary><h3><span class="chev" aria-hidden="true"></span>Kuramlar ve modeller <span class="hint">(detaylar için tıklayınız)</span></h3></summary>
+            <div class="models">
+              <div class="model"><div class="mh"><b>İş bölümü ve piyasanın genişliği</b><span class="by">Smith · 1776</span></div>
+                <p>Uzmanlaşma üretkenliği artırır; ancak iş bölümünün derinliği piyasanın büyüklüğüyle sınırlıdır. Bu fikir 1940'larda Rosenstein-Rodan'ın dar pazar sorununa ilişkin çözümlemesine temel oluşturmuştur.</p></div>
+              <div class="model"><div class="mh"><b>Karşılaştırmalı üstünlük</b><span class="by">Ricardo · 1817</span></div>
+                <p>Her ülkenin göreli olarak daha verimli olduğu malda uzmanlaşması durumunda ticaretten tüm taraflar kazançlı çıkar. Bu argüman statik bir niteliğe sahiptir; ülkenin mevcut üretim yapısını esas alır, gelecekte geliştirebileceği kapasiteyi dikkate almaz.</p></div>
+              <div class="model"><div class="mh"><b>Birikim ve sınıflar</b><span class="by">Marx · 1867</span></div>
+                <p>Artık değerin yeniden yatırılması büyümeyi sağlar; ancak aynı süreç kriz ve eşitsizlik de üretir. Bu yaklaşım Bağımlılık Okulu ve dünya-sistemi analizinin düşünsel kaynağını oluşturmuştur.</p></div>
+              <div class="model"><div class="mh"><b>Bebek endüstri ve ulusal sistem</b><span class="by">List · 1841</span></div>
+                <p>Sanayi, öğrenme süreciyle verimlilik kazanır. Bu nedenle sanayileşmede geç kalan ülke, yeni kurulan sanayisini rekabet gücü kazanana kadar korumalıdır. Bu görüş ithal ikamesi politikalarının ve Chang'ın tarihsel kurumsalcı tezinin öncülü kabul edilmektedir.</p></div>
+              <div class="model"><div class="mh"><b>Yenilik ve yaratıcı yıkım</b><span class="by">Schumpeter · 1911</span></div>
+                <p>Kalkınmanın itici gücü, girişimcinin geliştirdiği yeni ürün, yöntem ve pazarlardır. Bu yaklaşım içsel büyüme teorilerine ve yenilik politikalarına kaynaklık etmiştir.</p></div>
+            </div>
+          </details>
+          <section class="crit"><h3>Eleştiriler ve sınırlılıklar</h3><ul>
+            <li>Klasik kuramlar tüm ülkelerin aynı mekanizmalarla büyüyeceğini varsaymış; yapısal farklılıkları ve sömürge ilişkilerini göz ardı etmiştir.</li>
+            <li>Serbest ticaretin sanayileşmede geride kalan ülkelere de kazanç sağlayacağı varsayımı, List ve daha sonra yapısalcılar tarafından sorgulanmıştır.</li>
+            <li>Kalkınma ayrı bir sorun alanı olarak değil, zenginleşmenin kendiliğinden ortaya çıkan bir sonucu olarak ele alınmıştır.</li>
+          </ul></section>
+          <p class="turn"><b>Kırılma noktası:</b> Büyük Buhran ve İkinci Dünya Savaşı, piyasanın kendiliğinden kalkınma sağlayacağı inancını sarsmıştır. Keynesçi yaklaşım devlete ekonomide etkin bir rol yüklemiştir.</p>
+        </div>
+      </article>
+
+<!-- ============ 2. 1940'LAR ============ -->
+      <div class="mark" id="d1940"></div>
+      <article class="card" style="--i:1;--ec:var(--e2)">
+        <header class="chrome"><span class="yrs">1940'lar</span><span class="pos">02 / 08</span></header>
+        <div class="body">
+          <h2>Disiplinin Doğuşu ve Yapısalcı Okul</h2>
+          <div class="intro">
+            <p>Kalkınma iktisadı, İkinci Dünya Savaşı'nın ardından üç gelişmenin kesiştiği noktada bir disiplin olarak ortaya çıkmıştır. Bu gelişmeler Avrupa'nın yeniden inşası, sömürge imparatorluklarının çözülmesiyle bağımsızlığını kazanan çok sayıda yeni devlet ve Soğuk Savaş koşullarında bu ülkelerin hangi kalkınma modelini benimseyeceğine ilişkin rekabettir. ABD Başkanı Truman'ın 1949'daki Point Four konuşması, dünyayı ilk kez resmî olarak "gelişmiş" ve "az gelişmiş" ülkeler şeklinde sınıflandırmıştır.</p>
+            <p>Dönemin öncü iktisatçıları, az gelişmiş ekonomilerin gelişmiş ekonomilerin küçük ölçekli bir örneği olmadığını savunmuştur. Bu ekonomiler atıl emek, dar pazar, tek ürüne bağımlı ihracat ve zayıf sanayi gibi kendine özgü yapısal özellikler taşımaktadır. Bu nedenle standart iktisadi araçların yetersiz kaldığı, kalkınmanın sermaye birikimini hızlandıran ve sanayileşmeyi koordine eden bir devlet gerektirdiği kabul edilmiştir. Latin Amerika'da Raúl Prebisch ve BM Latin Amerika Ekonomik Komisyonu (ECLAC), bu yaklaşımı dünya ekonomisinin merkez–çevre yapısıyla ilişkilendirerek <b>Yapısalcı Okul</b>'u kurmuştur.</p>
+          </div>
+          <div class="duo">
+            <section><h3>Tarihsel arka plan</h3><ul>
+              <li><b>Bretton Woods (1944):</b> IMF ve Dünya Bankası kurulmuş, sabit kur sistemine dayalı uluslararası bir para ve kredi düzeni oluşturulmuştur.</li>
+              <li><b>Marshall Planı (1948):</b> Dış yardımla gerçekleştirilen yeniden inşanın başarısı, az gelişmiş ülkeler için de model olarak görülmüştür.</li>
+              <li><b>Sömürgecilikten kurtuluş:</b> Hindistan'ın 1947'de bağımsızlığını kazanmasıyla başlayan süreç Asya ve Afrika'ya yayılmıştır.</li>
+              <li><b>Point Four (1949):</b> Az gelişmiş ülkelere yönelik teknik yardım programı başlatılmış, kalkınma bir dış politika hedefi haline gelmiştir.</li>
+              <li><b>Keynesçi uzlaşı:</b> Savaş ekonomisi deneyimi ve Sovyet planlaması, devlete ve planlamaya duyulan güveni artırmıştır.</li>
+            </ul></section>
+            <section><h3>Ana temalar ve yaklaşımlar</h3><ul>
+              <li><b>Sanayileşme ve yapısal dönüşüm:</b> Kalkınma, üretimin tarımdan sanayiye kayması olarak tanımlanmıştır.</li>
+              <li><b>Devlet müdahalesi ve planlama:</b> Piyasa başarısızlıkları ve koordinasyon sorunlarının devletin öncülüğünü gerektirdiği savunulmuştur.</li>
+              <li><b>Sermaye birikiminin önceliği:</b> Temel kısıtın sermaye yetersizliği olduğu ve yatırım oranının yükseltilmesi gerektiği kabul edilmiştir.</li>
+              <li><b>Dış kaynak:</b> Yurtiçi tasarrufun yetersiz kaldığı durumda açığın dış yardım ve sermaye girişiyle kapatılması öngörülmüştür.</li>
+            </ul></section>
+          </div>
+          <details class="mdl"><summary><h3><span class="chev" aria-hidden="true"></span>Modeller ve kuramlar <span class="hint">(detaylar için tıklayınız)</span></h3></summary>
+            <div class="models">
+              <div class="model"><div class="mh"><b>Büyük İtme (Big Push)</b><span class="by">Rosenstein-Rodan · 1943</span></div>
+                <p>Tek başına kurulan bir fabrika ürünü için yeterli talep bulamaz. Ancak birbirinin ürününü satın alacak işçileri istihdam eden çok sayıda sanayi aynı anda kurulduğunda tüm yatırımlar kârlı hale gelir. Sektörler arası tamamlayıcılıklar ve altyapının bölünmezliği nedeniyle piyasa bu koordinasyonu kendiliğinden sağlayamaz.</p>
+                <p class="key"><b>Sonuç:</b> Devletin, eşanlı ve kapsamlı bir yatırım programıyla ekonomiyi düşük denge durumundan çıkarması gerekir.</p></div>
+              <div class="model"><div class="mh"><b>Harrod–Domar büyüme modeli</b><span class="by">1939 / 1946</span></div>
+                <span class="eq">g = s / v</span>
+                <p>Modelde büyüme oranı (g), tasarruf oranının (s) sermaye–hasıla katsayısına (v) bölünmesiyle elde edilir. Hedeflenen büyüme için gerekli yatırım miktarı hesaplanabilir; yurtiçi tasarrufun yetersiz kaldığı durumda aradaki fark dış yardımla kapatılır.</p>
+                <p class="key"><b>Önemi:</b> Model, kalkınma planlamasının temel aracı haline gelmiştir. Teknolojiyi ve verimliliği dışarıda bırakması modelin en önemli zayıflığını oluşturmuştur.</p></div>
+              <div class="model wide"><div class="mh"><b>Yapısalcı Okul: merkez–çevre ilişkisi</b><span class="by">Prebisch ve ECLAC · 1949</span></div>
+                <p>Yapısalcı Okul'a göre dünya ekonomisi, teknik ilerlemenin doğup yayıldığı sanayileşmiş <b>merkez</b> ile hammadde ve tarım ürünü ihraç eden <b>çevre</b>den oluşmaktadır. Merkezde verimlilik artışları, güçlü sendikalar ve tekelci piyasa yapısı nedeniyle yüksek ücret ve kâr olarak ülke içinde kalmaktadır. Çevrede ise verimlilik artışı, ihraç fiyatlarının düşmesi yoluyla merkeze aktarılmaktadır.</p>
+                <p>Bu yapı sonucunda çevre ülkelerin ticaret hadleri uzun dönemde bozulmakta, karşılaştırmalı üstünlük ilkesine göre hammadde üretiminde uzmanlaşmak çevreyi kalıcı olarak geride bırakmaktadır. Yapısalcılar bu soruna devlet öncülüğünde <b>ithal ikameci sanayileşme</b> ve bölgesel ekonomik entegrasyon ile yanıt verilmesini önermiştir. Yapısalcılar ayrıca enflasyonun parasal değil yapısal nedenlere, özellikle tarımsal arzın katılığına ve döviz darboğazına dayandığını ileri sürmüştür.</p>
+                <p class="key"><b>Not:</b> Prebisch ve ECLAC sıklıkla Bağımlılık Okulu ile karıştırılmaktadır. Bağımlılık Okulu, yapısalcılığın 1960'larda radikalleşen ayrı bir koludur.</p></div>
+            </div>
+          </details>
+          <section class="crit"><h3>Eleştiriler</h3><ul>
+            <li><b>Sermaye birikimine aşırı odaklanma:</b> Harrod–Domar yaklaşımında yatırım büyümenin tek belirleyicisi olarak ele alınmış; beşeri sermaye, teknoloji ve kurumlar ihmal edilmiştir.</li>
+            <li><b>Marshall Planı deneyiminin genellenmesi:</b> Kurumları ve nitelikli işgücü hazır olan Avrupa'daki başarının, bu unsurlardan yoksun ülkelere aktarılabileceği varsayılmıştır.</li>
+            <li><b>Planlama kapasitesinin abartılması:</b> Devletin bilgi ve uygulama kapasitesi olduğundan yüksek değerlendirilmiş, devlet başarısızlığı olasılığı dikkate alınmamıştır.</li>
+            <li><b>Ampirik tartışmalar:</b> Prebisch–Singer tezine ilişkin ticaret hadleri bulgularının veri ve dönem seçimine duyarlı olduğu ileri sürülmüştür.</li>
+          </ul></section>
+          <p class="turn"><b>Kırılma noktası:</b> Yeni bağımsız ülkeler bu yaklaşımları 1950'lerde ulusal kalkınma planlarına ve ithal ikameci stratejilere dönüştürmüştür.</p>
+        </div>
+      </article>
+
+<!-- ============ 3. 1950–60'LAR ============ -->
+      <div class="mark" id="d1950"></div>
+      <article class="card" style="--i:2;--ec:var(--e3)">
+        <header class="chrome"><span class="yrs">1950'ler – 1960'lar</span><span class="pos">03 / 08</span></header>
+        <div class="body">
+          <h2>Yüksek Kalkınma Teorisi, Modernleşme ve İthal İkamesi</h2>
+          <div class="intro">
+            <p>Bu dönem, kalkınma iktisadının en verimli dönemi olarak kabul edilmekte ve Krugman'ın ifadesiyle "yüksek kalkınma teorisi" dönemi olarak anılmaktadır. Az gelişmişlik, birbirini besleyen kısır döngülerden ve yapısal katılıklardan oluşan bir sistem olarak değerlendirilmiştir. Kalkınma, emeğin düşük verimli geleneksel tarımdan yüksek verimli modern sanayiye aktarılması şeklinde tanımlanmıştır. Bu dönüşümün temel aracı ithal ikamesi olmuştur. Daha önce ithal edilen sanayi mallarının gümrük duvarları, kotalar, aşırı değerli kur ve düşük faizli kredilerle yurtiçinde üretilmesi hedeflenmiştir.</p>
+            <p>Sanayileşmenin hangi sırayla gerçekleştirilmesi gerektiği konusunda iki farklı görüş geliştirilmiştir. Nurkse ve Rosenstein-Rodan'ın temsil ettiği <b>dengeli büyüme</b> yaklaşımı, birbirinin pazarını oluşturan çok sayıda sektöre aynı anda yatırım yapılmasını savunmuştur. Hirschman'ın <b>dengesiz büyüme</b> yaklaşımı ise kıt kaynakların bağlantı etkisi en yüksek öncü sektörlerde yoğunlaştırılmasını ve ortaya çıkan darboğazların yeni yatırımları tetiklemesini önermiştir. Rostow'un modernleşme kuramı tüm toplumların aynı aşamalardan geçeceğini öne sürerken Latin Amerika'da gelişen <b>Bağımlılık Okulu</b>, az gelişmişliğin bir başlangıç noktası değil, dünya kapitalizmine eklemlenme biçiminin sonucu olduğunu savunmuştur.</p>
+            <p>Aynı dönemde geliştirilen iki çalışma, sonraki on yılların tartışmalarının temelini oluşturmuştur. <b>Solow</b>'un neoklasik büyüme modeli, uzun dönemli büyümenin sermaye birikiminden çok teknolojik ilerlemeye bağlı olduğunu göstermiştir. Bu bulgu 1980'lerin içsel büyüme teorilerine ve ülkeler arası yakınsama tartışmalarına zemin hazırlamıştır. <b>Kuznets</b>'in ters-U eğrisi ise büyüme ile gelir dağılımı arasındaki ilişkiyi kalkınma gündemine taşımıştır. Bu çalışma 1970'lerin bölüşüm odaklı yaklaşımlarına ve 2000'lerde Piketty'nin eşitsizlik araştırmalarına uzanan tartışmanın başlangıç noktası olmuştur.</p>
+          </div>
+          <div class="duo">
+            <section><h3>Tarihsel arka plan</h3><ul>
+              <li><b>Dekolonizasyon:</b> 1960 yılı "Afrika Yılı" olarak anılmış, BM üye sayısı kısa sürede önemli ölçüde artmıştır.</li>
+              <li><b>Bandung Konferansı (1955) ve Bağlantısızlar Hareketi:</b> Gelişmekte olan ülkeler ortak bir siyasi kimlik oluşturmaya yönelmiştir.</li>
+              <li><b>BM Kalkınma On Yılı (1960'lar) ve UNCTAD (1964):</b> Prebisch'in öncülüğünde uluslararası ticaret kurallarının değiştirilmesi talep edilmiştir.</li>
+              <li><b>Planlama dönemi:</b> Hindistan'da Mahalanobis planları, Latin Amerika'da ithal ikameci sanayileşme, Türkiye'de Devlet Planlama Teşkilatı (1960) hayata geçirilmiştir.</li>
+              <li><b>Savaş sonrası yüksek büyüme dönemi:</b> Dünya ticareti ve üretimi tarihsel olarak yüksek hızlarla büyümüş; Güney Kore ve Tayvan 1960'larda ihracata yönelmiştir.</li>
+            </ul></section>
+            <section><h3>Ana temalar ve yaklaşımlar</h3><ul>
+              <li><b>İthal ikameci sanayileşme (İİS):</b> Süreç tüketim mallarında kolay aşamayla başlamış, ara ve yatırım mallarında zor aşamayla sürdürülmesi hedeflenmiştir.</li>
+              <li><b>Dışa bağımlılığın azaltılması:</b> Sanayileşmenin iç pazara yönelmesi ve ithalata olan bağımlılığın azaltılması amaçlanmıştır.</li>
+              <li><b>Tarımın ikinci plana atılması:</b> Fiyat politikaları ve vergiler aracılığıyla tarımdan sanayiye kaynak aktarılmıştır.</li>
+              <li><b>Kalkınma planları ve planlama kurumları:</b> Beş yıllık planlar, yatırım öncelikleri ve kamu iktisadi teşebbüsleri yaygınlaşmıştır.</li>
+              <li><b>Beşeri sermaye:</b> Eğitim ve sağlık harcamaları ilk kez yatırım olarak değerlendirilmeye başlanmıştır.</li>
+            </ul></section>
+          </div>
+          <details class="mdl"><summary><h3><span class="chev" aria-hidden="true"></span>Modeller ve kuramlar <span class="hint">(detaylar için tıklayınız)</span></h3></summary>
+            <div class="models">
+              <p class="grp">Yapısalcı modeller</p>
+              <div class="model"><div class="mh"><b>İkili yapı ve sınırsız emek arzı</b><span class="by">Lewis · 1954</span></div>
+                <p>Ekonomi, geçimlik üretim yapan geleneksel sektör ile kapitalist modern sektörden oluşur. Geleneksel sektörde marjinal verimliliği sıfıra yakın gizli işsizler bulunur. Modern sektör bu işgücünü sabit ve düşük bir ücretle istihdam eder ve elde ettiği kârları yeniden yatırarak büyür.</p>
+                <p class="key"><b>Lewis dönüm noktası:</b> Atıl işgücü tükendiğinde ücretler yükselmeye başlar. Lewis'e göre kalkınma, tasarruf oranının yüzde 5'ten yüzde 12'ye yükselmesi sürecidir. Lewis 1979'da Nobel Ödülü'nü almıştır.</p></div>
+              <div class="model"><div class="mh"><b>Kısır döngü ve dengeli büyüme</b><span class="by">Nurkse · 1953</span></div>
+                <p>Arz yönünde düşük gelir düşük tasarrufa, düşük tasarruf düşük yatırıma, düşük yatırım ise yeniden düşük gelire yol açar. Talep yönünde düşük gelir dar bir pazar oluşturur ve yatırım için yeterli teşvik doğmaz.</p>
+                <p class="key"><b>Çözüm önerisi:</b> Birbirinin pazarını oluşturan sektörlere eşzamanlı yatırım yapılmalıdır. Bu öneri Büyük İtme yaklaşımının devamı niteliğindedir.</p></div>
+              <div class="model"><div class="mh"><b>Prebisch–Singer tezi</b><span class="by">Prebisch ve Singer · 1950</span></div>
+                <p>Hammaddelere yönelik talebin gelir esnekliği düşük, sanayi mallarına yönelik talebin gelir esnekliği yüksektir. Ayrıca merkez ülkelerdeki örgütlü işgücü ve tekelci piyasalar verimlilik kazançlarının fiyatlara yansımasını engeller. Bu nedenle hammadde ihracatçısı ülkelerin ticaret hadleri uzun dönemde bozulur.</p>
+                <p class="key"><b>Politika sonucu:</b> Tez, ithal ikameci sanayileşmenin temel gerekçesini oluşturmuştur.</p></div>
+              <div class="model"><div class="mh"><b>Dengesiz büyüme ve bağlantılar</b><span class="by">Hirschman · 1958</span></div>
+                <p>Hirschman'a göre kıt olan kaynak sermaye değil, karar alma yeteneğidir. Tüm sektörlere aynı anda yatırım yapmak yerine en güçlü <b>geri bağlantıya</b> (girdi talebi yaratan) ve <b>ileri bağlantıya</b> (çıktısı diğer sektörlere girdi olan) sahip sektörlere yatırım yapılmalıdır.</p>
+                <p class="key"><b>Temel mantık:</b> Bilinçli olarak oluşturulan dengesizlikler ve darboğazlar yeni yatırımları teşvik eder. Bu yaklaşım Nurkse'nin dengeli büyüme tezine karşı geliştirilmiştir.</p></div>
+              <div class="model"><div class="mh"><b>Kümülatif nedensellik</b><span class="by">Myrdal · 1957</span></div>
+                <p>Piyasa güçleri bölgeler ve ülkeler arasındaki farklılıkları azaltmak yerine derinleştirir. Gelişmiş bölge sermayeyi ve nitelikli işgücünü kendine çeker (geri yıkama etkisi), gelişmenin diğer bölgelere yayılma etkisi ise zayıf kalır.</p></div>
+              <div class="model"><div class="mh"><b>Yapısal dönüşüm kalıpları</b><span class="by">Chenery · 1960'lar</span></div>
+                <p>Chenery, kişi başı gelir yükseldikçe üretim, istihdam, talep ve ticaret yapısında ortaya çıkan düzenli değişimleri ülkeler arası istatistiksel kalıplar olarak ortaya koymuştur. Bu süreçte tarımın payı azalmakta, sanayinin ve hizmetlerin payı artmaktadır.</p></div>
+
+              <p class="grp">Modernleşme kuramı</p>
+              <div class="model"><div class="mh"><b>İktisadi büyümenin aşamaları</b><span class="by">Rostow · 1960</span></div>
+                <p>Rostow, kalkınmayı beş aşamada tanımlamıştır: geleneksel toplum, kalkış için ön koşulların oluşması, <b>kalkış</b> (yatırım oranının yüzde 10'u aşması ve öncü sektörlerin ortaya çıkması), olgunluğa geçiş ve kitlesel tüketim çağı.</p>
+                <p class="key"><b>Bağlam:</b> Eserin alt başlığı "Komünist Olmayan Bir Manifesto"dur; kuram Soğuk Savaş döneminin kalkınma anlayışını yansıtmaktadır.</p></div>
+              <div class="model"><div class="mh"><b>Göreli geri kalmışlık</b><span class="by">Gerschenkron · 1962</span></div>
+                <p>Geç sanayileşen ülkeler öncü ülkelerin izlediği yolu tekrarlamaz. Bir ülke ne kadar geri kalmışsa sanayileşmesi o kadar hızlı ve büyük ölçekli gerçekleşir. Eksik ön koşulların yerini bankalar (Almanya örneği) ya da devlet (Rusya örneği) gibi ikame kurumlar alır.</p></div>
+
+              <p class="grp">Neoklasik büyüme ve beşeri sermaye</p>
+              <div class="model"><div class="mh"><b>Neoklasik büyüme modeli</b><span class="by">Solow · 1956</span></div>
+                <p>Azalan getiriler nedeniyle sermaye birikimi uzun dönemde büyümeyi tek başına sürdüremez; kalıcı büyüme dışsal teknolojik ilerlemeden kaynaklanır. Büyüme muhasebesinde sermaye ve emekle açıklanamayan kısım "Solow artığı" olarak adlandırılmıştır. Model, benzer yapıdaki yoksul ülkelerin zengin ülkelerden daha hızlı büyüyeceğini (koşullu yakınsama) öngörmüştür.</p>
+                <p class="key"><b>Sonraki tartışmalara etkisi:</b> Teknolojik ilerlemenin model dışında bırakılması, 1980'lerde Romer ve Lucas'ın teknolojiyi açıklamaya çalışan içsel büyüme teorilerini doğurmuştur. Yakınsama öngörüsü de ülkeler arası gelir farklarının neden kapanmadığına ilişkin kapsamlı bir ampirik literatürün çıkış noktası olmuştur.</p></div>
+              <div class="model"><div class="mh"><b>Ters-U eğrisi</b><span class="by">Kuznets · 1955</span></div>
+                <p>Kalkınmanın ilk aşamasında modern sektöre geçişle birlikte gelir eşitsizliği artar, belirli bir gelir düzeyinden sonra ise azalır. Bu bulgu uzun süre "önce büyüme, sonra bölüşüm" anlayışının gerekçesi olarak kullanılmıştır.</p>
+                <p class="key"><b>Sonraki tartışmalara etkisi:</b> Eğrinin varsaydığı kendiliğinden düzelmenin gerçekleşmemesi, 1970'lerde temel ihtiyaçlar ve yeniden dağıtım yaklaşımlarını gündeme getirmiştir. Piketty ise 2000'lerde eşitsizlikteki düşüşün kendiliğinden değil, savaşlar ve kamu politikalarının sonucu olduğunu ileri sürmüştür.</p></div>
+              <div class="model"><div class="mh"><b>Geleneksel tarım ve beşeri sermaye</b><span class="by">Schultz · 1964</span></div>
+                <p>Schultz'a göre geleneksel tarımda üretim yapan çiftçiler irrasyonel değil, "yoksul fakat etkin" davranmaktadır; asıl sorun teşvik, teknoloji ve bilgi eksikliğidir. Eğitim ve sağlığa yapılan yatırım fiziki sermaye yatırımı kadar önemlidir. Schultz 1979'da Nobel Ödülü'nü almıştır.</p></div>
+
+              <p class="grp">Bağımlılık Okulu <span>1960'lar – 1970'ler</span></p>
+              <div class="model"><div class="mh"><b>Az gelişmişliğin gelişmesi</b><span class="by">A. G. Frank · 1966</span></div>
+                <p>Frank'e göre az gelişmişlik bir geri kalmışlık evresi değildir; metropol–uydu ilişkileri zinciri boyunca artığın merkeze aktarılmasının sonucudur. Bu durumdan çıkışın yolu dünya kapitalist sisteminden kopmaktır.</p></div>
+              <div class="model"><div class="mh"><b>Bağımlı kalkınma</b><span class="by">Cardoso ve Faletto · 1969</span></div>
+                <p>Bağımlılık koşullarında da sanayileşme ve büyüme gerçekleşebilir. Sürecin sonucunu yerel sınıf ittifakları, devletin yapısı ve yabancı sermayeyle kurulan ilişki belirler. Bu yaklaşım bağımlılığa daha esnek ve tarihsel bir yorum getirmektedir.</p></div>
+              <div class="model"><div class="mh"><b>Eşitsiz mübadele</b><span class="by">Dos Santos · Amin · Emmanuel</span></div>
+                <p>Bağımlılık teknolojik ve finansal biçimler de almaktadır. Emmanuel'e göre merkez ile çevre arasındaki ücret farkları nedeniyle uluslararası ticaret yoluyla çevreden merkeze sürekli değer aktarılmaktadır.</p></div>
+              <div class="model"><div class="mh"><b>Dünya-sistemi analizi</b><span class="by">Wallerstein · 1974</span></div>
+                <p>Wallerstein'a göre tek bir kapitalist dünya ekonomisi merkez, yarı çevre ve çevreden oluşmaktadır. Ülkeler bu hiyerarşi içinde konum değiştirebilir; ancak sistem hiyerarşinin kendisini sürekli yeniden üretir.</p></div>
+            </div>
+          </details>
+          <section class="crit"><h3>Eleştiriler</h3><ul>
+            <li><b>İthal ikamesinin tıkanması:</b> Kolay aşamanın ardından ara ve yatırım malı ithalatı artmıştır. Kronik döviz darboğazı ve ödemeler dengesi krizleri, ekonomilerde dur-kalk döngülerine yol açmıştır.</li>
+            <li><b>Verimsizlik ve rant:</b> Korumacılık, küçük ölçekli ve ihracat yapamayan sanayilerin oluşmasına ve rant arayışına neden olmuştur. Aşırı değerli kur tarımı ve ihracatı dolaylı olarak vergilendirmiştir.</li>
+            <li><b>Kentsel yanlılık:</b> Lipton'a göre tarımın ihmal edilmesi gıda sorunlarına, kırdan kente göçe ve kentlerde kayıt dışı yoksulluğa yol açmıştır.</li>
+            <li><b>Lewis modelinin sınırlılıkları:</b> Tarımda sıfır marjinal verimlilik varsayımı ampirik olarak tartışmalı bulunmuştur. Harris ve Todaro (1970), kentlerdeki işsizliğe rağmen göçün neden sürdüğünü beklenen gelir kavramıyla açıklamıştır.</li>
+            <li><b>Modernleşme kuramına yönelik eleştiriler:</b> Rostow'un şeması doğrusal, Avrupa merkezli ve dış ilişkileri göz ardı eden bir yaklaşım olarak eleştirilmiştir.</li>
+            <li><b>Bağımlılık Okulunun açmazı:</b> Okul, Güney Kore ve Tayvan'ın dünya pazarıyla bütünleşerek başarılı olmasını açıklayamamış; sistemden kopuş önerisi gerçekçi bulunmamıştır.</li>
+          </ul></section>
+          <p class="turn"><b>Kırılma noktası:</b> Büyüme oranları yüksek seyretmiş, ancak yoksulluk, işsizlik ve eşitsizlik azalmamıştır. 1970'lerde odak büyümeden bölüşüme kaymıştır.</p>
+        </div>
+      </article>
+
+<!-- ============ 4. 1970'LER ============ -->
+      <div class="mark" id="d1970"></div>
+      <article class="card" style="--i:3;--ec:var(--e4)">
+        <header class="chrome"><span class="yrs">1970'ler</span><span class="pos">04 / 08</span></header>
+        <div class="body">
+          <h2>Büyümeden Yoksulluğa ve Bölüşüme</h2>
+          <div class="intro">
+            <p>1960'ların sonunda gelişmekte olan ülkeler tarihsel olarak yüksek büyüme oranlarına ulaşmıştır; ancak birçok ülkede yoksulluk, işsizlik ve eşitsizlik azalmamış, bazı ülkelerde artmıştır. Dudley Seers 1969'da, yoksulluk, işsizlik ve eşitsizlikte iyileşme sağlanmadığı sürece kişi başı gelirdeki artışın kalkınma olarak nitelendirilemeyeceğini ileri sürmüştür. Büyümenin faydalarının kendiliğinden alt gelir gruplarına yayılacağı beklentisi geçerliliğini yitirmiştir.</p>
+            <p>Bu gelişmeler kalkınmanın hedefinin yeniden tanımlanmasına yol açmıştır. Dünya Bankası McNamara yönetiminde yoksulluğu doğrudan hedef almış, Uluslararası Çalışma Örgütü (ILO) temel ihtiyaçlar yaklaşımını geliştirmiş, Boserup kadınların kalkınma süreçlerinin dışında bırakıldığını ortaya koymuştur. Uluslararası alanda gelişmekte olan ülkeler, petrol şoklarının sağladığı pazarlık gücüyle dünya ekonomisinin kurallarının değiştirilmesini talep etmiştir. Dönem, petrodolarların geri dönüşümüyle biriken dış borçlarla sona ermiştir.</p>
+          </div>
+          <div class="duo">
+            <section><h3>Dönemin özellikleri ve tarihsel arka plan</h3><ul>
+              <li><b>Bretton Woods sisteminin çöküşü (1971):</b> Doların altına çevrilebilirliği sona ermiş, dalgalı kur sistemine geçilmiştir.</li>
+              <li><b>Petrol şokları (1973, 1979):</b> Petrol ithal eden ülkelerde stagflasyon yaşanmış, OPEC'in etkisi artmıştır.</li>
+              <li><b>Petrodolarların geri dönüşümü:</b> Uluslararası bankalar gelişmekte olan ülkelere düşük reel faizle yüksek tutarda kredi kullandırmıştır.</li>
+              <li><b>Kuzey–Güney diyaloğu:</b> Gelişmekte olan ülkeler BM'de ortak taleplerle hareket etmiştir.</li>
+              <li><b>1979 Volcker şoku:</b> ABD faizlerinin sert biçimde yükselmesi borçlu ülkelerin yükünü hızla ağırlaştırmıştır.</li>
+            </ul></section>
+            <section><h3>Ana temalar</h3><ul>
+              <li>Büyüme bir amaç değil araç olarak ele alınmış; asıl amacın yoksulluk, işsizlik ve eşitsizliğin azaltılması olduğu kabul edilmiştir.</li>
+              <li>Mutlak yoksulluk ve temel ihtiyaçların karşılanması kalkınmanın ölçütü haline gelmiştir.</li>
+              <li>Kırsal kalkınma ve küçük üreticiler yeniden gündeme alınmıştır.</li>
+              <li>Kadınların görünmeyen emeği ve kayıt dışı sektör kalkınma literatürüne girmiştir.</li>
+              <li>Uluslararası ekonomik düzenin adaletsiz yapısı sorgulanmıştır.</li>
+            </ul></section>
+          </div>
+          <details class="mdl"><summary><h3><span class="chev" aria-hidden="true"></span>Yaklaşımlar ve kuramlar <span class="hint">(detaylar için tıklayınız)</span></h3></summary>
+            <div class="models">
+              <div class="model"><div class="mh"><b>Temel İhtiyaçlar Yaklaşımı</b><span class="by">ILO · 1976</span></div>
+                <p>Bu yaklaşıma göre kalkınmanın ölçütü gıda, barınma, giyim, sağlık, eğitim ve temiz su gibi temel ihtiyaçların karşılanmasıdır. Bu ihtiyaçların doğrudan kamu hizmetleri ve istihdam politikalarıyla karşılanması gerekir; büyümenin dolaylı etkilerini beklemek yeterli değildir.</p></div>
+              <div class="model"><div class="mh"><b>Büyümeyle birlikte yeniden dağıtım</b><span class="by">Chenery vd. · 1974</span></div>
+                <p>Yaklaşım, mevcut varlıkların değil büyümeyle sağlanan artışın yoksullara yönelik yatırımlar aracılığıyla yeniden dağıtılmasını önermiştir. Küçük çiftçilere kredi, kırsal altyapı ve eğitim bu yatırımların başında gelmektedir. Yaklaşım, kapsamlı toprak reformu yerine kademeli bir yol benimsemiştir.</p></div>
+              <div class="model"><div class="mh"><b>Dünya Bankası'nın yoksulluğa yönelmesi</b><span class="by">McNamara · 1968–81</span></div>
+                <p>McNamara'nın 1973 Nairobi konuşmasıyla mutlak yoksulluk kavramı Banka'nın gündeminin merkezine yerleşmiştir. Banka, büyük altyapı projelerinin yanı sıra kırsal kalkınma ve sosyal projelere de kaynak ayırmaya başlamıştır.</p></div>
+              <div class="model"><div class="mh"><b>Yeni Uluslararası Ekonomik Düzen</b><span class="by">BM · 1974</span></div>
+                <p>Gelişmekte olan ülkeler hammadde fiyatlarının istikrara kavuşturulmasını, teknoloji transferini, borçların hafifletilmesini, çok uluslu şirketlerin düzenlenmesini ve sanayi mallarına tercihli pazar erişimi sağlanmasını talep etmiştir. Bu talepler büyük ölçüde uygulamaya geçirilememiştir.</p></div>
+              <div class="model wide"><div class="mh"><b>Toplumsal cinsiyet ve kalkınma</b><span class="by">Boserup · 1970</span></div>
+                <p>Boserup <i>Kalkınmada Kadının Rolü</i> adlı eserinde, modernleşme sürecinin kadınların tarımdaki merkezi rolünü göz ardı ettiğini ortaya koymuştur. Teknoloji, eğitim ve kredi olanakları ağırlıklı olarak erkeklere yönelmiş, bunun sonucunda kadınların göreli konumu gerilemiştir.</p>
+                <p>Bu çalışmanın ardından geliştirilen <b>Kalkınmada Kadın (WID)</b> yaklaşımı, kadınların kalkınma projelerine dahil edilmesine odaklanmıştır. 1980'lerde ortaya çıkan <b>Toplumsal Cinsiyet ve Kalkınma (GAD)</b> yaklaşımı ise güç ilişkilerini, ev içi emeği ve bakım emeğini sorgulayan daha yapısal bir çerçeve geliştirmiştir.</p></div>
+              <div class="model"><div class="mh"><b>Kırsal–kentsel göç</b><span class="by">Harris ve Todaro · 1970</span></div>
+                <p>Model, göç kararının fiili ücrete göre değil beklenen kentsel gelire göre verildiğini ileri sürmektedir. Bu nedenle kentlerde istihdam yaratılması işsizliği azaltmak yerine daha fazla göçe neden olabilir.</p></div>
+              <div class="model"><div class="mh"><b>Kayıt dışı sektör</b><span class="by">ILO Kenya raporu · 1972</span></div>
+                <p>ILO'nun Kenya raporu, kentlerde resmî istihdamın dışında kalan geniş bir küçük üretim ve hizmet alanını tanımlamıştır. Kayıt dışılık bu tarihten itibaren kalkınma iktisadının kalıcı konularından biri haline gelmiştir.</p></div>
+            </div>
+          </details>
+          <section class="crit"><h3>Eleştiriler</h3><ul>
+            <li><b>Üretim kapasitesinin ihmali:</b> Temel ihtiyaçlar yaklaşımı tüketimi ön plana çıkardığı, büyümeyi ve sanayileşmeyi ikinci planda bıraktığı gerekçesiyle eleştirilmiştir.</li>
+            <li><b>Yukarıdan aşağı yaklaşım:</b> İhtiyaçların dışarıdan tanımlanması eleştiri konusu olmuştur. Bazı gelişmekte olan ülkeler bu yaklaşımı gelişmiş ülkelerin sanayileşmeyi sınırlama girişimi olarak değerlendirmiştir.</li>
+            <li><b>Proje temelli yaklaşımın sınırlılıkları:</b> Kırsal kalkınma projeleri yüksek maliyetli olmuş, geniş ölçekte uygulanamamış ve yönetişim sorunlarıyla karşılaşmıştır.</li>
+            <li><b>Kırılgan finansman yapısı:</b> Borçla finanse edilen büyüme, dış faiz ve emtia fiyatı şoklarına karşı savunmasız kalmıştır.</li>
+          </ul></section>
+          <p class="turn"><b>Kırılma noktası:</b> 1979 faiz şoku ve Meksika'nın 1982'de borç ödemelerini durdurması borç krizini başlatmıştır. Tartışmanın odağı yoksulluktan istikrar ve piyasa mekanizmasına kaymıştır. Lewis ve Schultz'un 1979'da Nobel Ödülü'nü paylaşması ise yüksek kalkınma teorisinin mirasını teyit etmiştir.</p>
+        </div>
+      </article>
+
+<!-- ============ 5. 1980'LER ============ -->
+      <div class="mark" id="d1980"></div>
+      <article class="card" style="--i:4;--ec:var(--e5)">
+        <header class="chrome"><span class="yrs">1980'ler</span><span class="pos">05 / 08</span></header>
+        <div class="body">
+          <h2>Neoklasik Karşı Devrim ve Sürdürülebilirliğin Doğuşu</h2>
+          <div class="intro">
+            <p>Meksika'nın 1982'de borç ödemelerini durdurduğunu açıklamasıyla başlayan borç krizi, kalkınma düşüncesinde köklü bir dönüşümü başlatmıştır. ABD'de Reagan, İngiltere'de Thatcher hükümetleriyle güçlenen neoliberal yaklaşım, gelişmekte olan ülkelerin sorunlarının kaynağını piyasa başarısızlığında değil <b>devlet başarısızlığında</b> görmüştür. Korumacılık, fiyat kontrolleri, verimsiz kamu işletmeleri ve rant arayışı bu başarısızlığın temel unsurları olarak değerlendirilmiştir. Deepak Lal, ayrı bir kalkınma iktisadına ihtiyaç bulunmadığını savunmuştur.</p>
+            <p>IMF ve Dünya Bankası, borç krizi yaşayan ülkelere kredi karşılığında yapısal uyum programları uygulamıştır. Bu programlar önce istikrar tedbirlerini (devalüasyon, kamu harcamalarında kesinti, sıkı para politikası), ardından liberalleşme ve özelleştirmeyi kapsamıştır. Söz konusu politika seti 1989'da Washington Uzlaşması olarak adlandırılmıştır. Aynı dönemde iki önemli yaklaşım daha gelişmiştir. İçsel büyüme teorileri bilgi ve yeniliği büyümenin merkezine yerleştirmiş, Brundtland Raporu ise çevre ile kalkınmayı tek bir çerçevede birleştiren <b>sürdürülebilir kalkınma</b> kavramını ortaya koymuştur.</p>
+          </div>
+          <div class="duo">
+            <section><h3>Dönemin özellikleri ve tarihsel arka plan</h3><ul>
+              <li><b>1982 borç krizi:</b> Latin Amerika ve Afrika'da "kayıp on yıl" yaşanmış, kişi başı gelirler gerilemiştir.</li>
+              <li><b>Reagan ve Thatcher dönemi:</b> Devletin ekonomideki rolü daraltılmış, deregülasyon ve parasalcı politikalar benimsenmiştir.</li>
+              <li><b>İthal ikameci politikaların tıkanması:</b> Bu politikaların sınırlarına ulaşması, Doğu Asya'nın ihracata dayalı başarısını öne çıkarmıştır.</li>
+              <li><b>Türkiye'de 24 Ocak 1980 Kararları:</b> Türkiye, dönemin dışa açılma dönüşümünün erken örneklerinden biri olmuştur.</li>
+              <li><b>Çevre krizleri:</b> Bhopal (1984), Çernobil (1986) ve ozon tabakasının incelmesi küresel çevre bilincini güçlendirmiş, Montreal Protokolü (1987) imzalanmıştır.</li>
+              <li><b>Berlin Duvarı'nın yıkılması (1989):</b> Planlı ekonomilerin çöküşü piyasa merkezli yaklaşımı güçlendirmiştir.</li>
+            </ul></section>
+            <section><h3>Ana temalar ve yaklaşımlar</h3><ul>
+              <li><b>Piyasa mekanizmasının etkinliği:</b> Fiyatların doğru belirlenmesinin kalkınmanın anahtarı olduğu savunulmuştur.</li>
+              <li><b>Devlet başarısızlığı ve rant arayışı eleştirisi:</b> Devlet müdahalesinin maliyetinin piyasa aksaklıklarının maliyetinden yüksek olduğu ileri sürülmüştür.</li>
+              <li><b>Dışa açık, ihracata dayalı büyüme:</b> Doğu Asya deneyimi bu stratejinin kanıtı olarak sunulmuştur.</li>
+              <li><b>Yapısal uyum programları:</b> IMF istikrar programları ve Dünya Bankası'nın koşullu yapısal uyum kredileri yaygınlaşmıştır.</li>
+              <li><b>Sürdürülebilir kalkınma:</b> Çevrenin korunması ile kalkınmanın birbirine karşıt hedefler olmadığı görüşü benimsenmiştir.</li>
+            </ul></section>
+          </div>
+          <details class="mdl"><summary><h3><span class="chev" aria-hidden="true"></span>Modeller ve kuramlar <span class="hint">(detaylar için tıklayınız)</span></h3></summary>
+            <div class="models">
+              <div class="model"><div class="mh"><b>Rant kollama toplumu</b><span class="by">Krueger · 1974</span></div>
+                <p>İthalat kotaları ve lisanslar kıt ve değerli bir rant yaratır. Firmalar üretim yerine bu ranta erişmek için kaynak harcar. Bu nedenle korumacılığın toplumsal maliyeti görünenden çok daha yüksektir.</p></div>
+              <div class="model"><div class="mh"><b>Kalkınma iktisadının sefaleti</b><span class="by">Lal · 1983</span></div>
+                <p>Lal'e göre ayrı bir kalkınma iktisadına gerek bulunmamaktadır; standart neoklasik iktisat tüm ülkeler için geçerlidir. Asıl sorun, devletin ekonomiyi yönlendirmeye çalışmasıdır (dirigisme).</p></div>
+              <div class="model"><div class="mh"><b>Dışa açılma ve ihracat teşviki</b><span class="by">Balassa</span></div>
+                <p>Balassa, etkin koruma oranlarını ölçerek korumacılığın gizli maliyetini ortaya koymuştur. İhracata yönelen ülkelerin daha hızlı büyüdüğünü savunmuş ve karşılaştırmalı üstünlüğün kalkınma aşamalarına göre değiştiğini ileri sürmüştür.</p></div>
+              <div class="model"><div class="mh"><b>Dış yardım eleştirisi</b><span class="by">Peter Bauer</span></div>
+                <p>Bauer'e göre dış yardım hükümetleri ve bürokrasiyi güçlendirmekte, girişimciliği zayıflatmakta ve kaynakların siyasi amaçlarla kullanılmasına yol açmaktadır. Bauer, kalkınmanın dışarıdan aktarılamayacağını savunmuştur.</p></div>
+              <div class="model wide"><div class="mh"><b>Washington Uzlaşması</b><span class="by">John Williamson · 1989</span></div>
+                <p>Washington merkezli kurumların (IMF, Dünya Bankası ve ABD Hazinesi) Latin Amerika için üzerinde uzlaştığı on politika şunlardır:</p>
+                <ul>
+                  <li>Kamu maliyesinde disiplin sağlanmalıdır.</li><li>Kamu harcamaları eğitim, sağlık ve altyapıya yönlendirilmelidir.</li><li>Vergi tabanı genişletilmelidir.</li><li>Faiz oranları piyasada belirlenmelidir.</li><li>Döviz kuru rekabetçi düzeyde tutulmalıdır.</li>
+                  <li>Dış ticaret serbestleştirilmelidir.</li><li>Doğrudan yabancı yatırımların önündeki engeller kaldırılmalıdır.</li><li>Kamu işletmeleri özelleştirilmelidir.</li><li>Piyasalara giriş ve çıkışı kısıtlayan düzenlemeler kaldırılmalıdır.</li><li>Mülkiyet hakları güvence altına alınmalıdır.</li>
+                </ul></div>
+              <div class="model"><div class="mh"><b>İçsel büyüme teorileri</b><span class="by">Romer 1986 · Lucas 1988</span></div>
+                <p>Romer'e göre bilgi, rakip olmayan bir maldır; fikirler ve Ar-Ge faaliyetleri artan getiriler yoluyla büyümeyi ekonominin içinden sürdürür. Lucas ise beşeri sermayenin dışsallıklarını vurgulamış ve sermayenin neden zengin ülkelerden yoksul ülkelere akmadığını sorgulamıştır.</p>
+                <p class="key"><b>Sonuç:</b> Ülkeler arası yakınsama kendiliğinden gerçekleşmez. Bu nedenle eğitim, Ar-Ge ve yenilik politikaları önem kazanmıştır.</p></div>
+              <div class="model"><div class="mh"><b>Sürdürülebilirliğin öncülleri</b><span class="by">1972</span></div>
+                <p>Roma Kulübü'nün <i>Büyümenin Sınırları</i> raporu, sınırsız büyümenin kaynak ve kirlilik sınırlarıyla karşılaşacağını öngörmüştür. Aynı yıl düzenlenen Stockholm BM İnsan Çevresi Konferansı çevreyi uluslararası gündeme taşımış ve BM Çevre Programı (UNEP) kurulmuştur.</p></div>
+              <div class="model wide"><div class="mh"><b>Sürdürülebilir kalkınma kavramının doğuşu: Brundtland Raporu</b><span class="by">Ortak Geleceğimiz · 1987</span></div>
+                <p>BM Dünya Çevre ve Kalkınma Komisyonu'nun Norveç Başbakanı Gro Harlem Brundtland başkanlığında hazırladığı rapor, sürdürülebilir kalkınmayı "bugünün ihtiyaçlarının gelecek kuşakların kendi ihtiyaçlarını karşılama olanağından ödün verilmeden karşılanması" olarak tanımlamıştır.</p>
+                <p>Rapor üç temel vurguya dayanmaktadır. Birincisi <b>kuşaklar arası adalettir</b>; bugünkü tüketimin gelecek kuşakların olanaklarını azaltmaması gerekir. İkincisi yoksulluk ile çevre tahribatının <b>birbirini beslediğidir</b>; yoksulluk ormanların ve toprağın tahribatına yol açmakta, bozulan çevre de yoksulluğu derinleştirmektedir. Üçüncüsü çevre ve kalkınma politikalarının birbirinden ayrı ele alınamayacağıdır. Rapor, 1992 Rio Zirvesi'ne, Gündem 21'e ve sonraki iklim sözleşmelerine zemin hazırlamıştır.</p>
+                <p class="key"><b>Önemi:</b> Rapor, Büyümenin Sınırları'ndan farklı olarak büyümeyi reddetmemiş; gelişmekte olan ülkelerin kalkınma hakkı ile çevrenin korunmasını uzlaştırmayı amaçlamıştır.</p></div>
+            </div>
+          </details>
+          <section class="crit"><h3>Eleştiriler</h3><ul>
+            <li><b>Sosyal maliyetler:</b> Sağlık ve eğitim harcamalarındaki kesintiler yoksulluğu artırmıştır. UNICEF'in <i>İnsani Yüzlü Uyum</i> (1987) raporu bu maliyetleri belgelemiştir.</li>
+            <li><b>Beklenen büyümenin gerçekleşmemesi:</b> Afrika ve Latin Amerika'da durgunluk sürmüş, kayıp on yıl uzamıştır.</li>
+            <li><b>Tek tip politika önerisi:</b> Ülkelerin özgün koşulları, kurumsal yapıları ve reformların uygulanma sırası göz ardı edilmiştir.</li>
+            <li><b>Doğu Asya deneyiminin yorumlanması:</b> Güney Kore ve Tayvan'ın serbest piyasa politikalarıyla değil, yoğun devlet yönlendirmesiyle büyüdüğü ileri sürülmüştür.</li>
+            <li><b>Finansal serbestleşmenin riskleri:</b> Bu riskler sonraki on yılda yaşanan krizlerle ortaya çıkmıştır. Kredi koşulluluğu ulusal egemenlik ve demokratik meşruiyet açısından da sorgulanmıştır.</li>
+            <li><b>Sürdürülebilirlik kavramının belirsizliği:</b> Brundtland tanımı, farklı aktörlerin farklı biçimlerde yorumlayabildiği geniş bir uzlaşı kavramı olarak eleştirilmiştir.</li>
+          </ul></section>
+          <p class="turn"><b>Kırılma noktası:</b> Latin Amerika ve Afrika'da kayıp on yıl yaşanırken devletin yönlendirdiği Doğu Asya ekonomileri hızla büyümüştür. Bu durum, piyasa ile devlet arasındaki ilişkinin yeniden değerlendirilmesini zorunlu kılmıştır.</p>
+        </div>
+      </article>
+
+<!-- ============ 6. 1990'LAR ============ -->
+      <div class="mark" id="d1990"></div>
+      <article class="card" style="--i:5;--ec:var(--e6)">
+        <header class="chrome"><span class="yrs">1990'lar</span><span class="pos">06 / 08</span></header>
+        <div class="body">
+          <h2>Kurumsalcı, İnsani ve Alternatif Yaklaşımlar</h2>
+          <div class="intro">
+            <p>Soğuk Savaş'ın sona ermesiyle piyasa ekonomisi alternatifsiz bir model olarak görülmeye başlanmıştır; ancak aynı dönemde yaşanan deneyimler piyasanın tek başına yeterli olmadığını ortaya koymuştur. Eski sosyalist ülkelerde hızlı özelleştirme ve şok terapisi, mülkiyet hakları, hukuk düzeni ve düzenleyici kurumlar oluşturulmadan uygulandığı için derin ekonomik daralmalara ve oligarşik yapılara yol açmıştır. Meksika (1994) ve Asya (1997) krizleri, sermaye hareketlerinin hızla serbestleştirilmesinin risklerini göstermiştir.</p>
+            <p>Bu sorunlara üç farklı yönden yanıt geliştirilmiştir. Kurumsal iktisat, kalkınmanın temelinde toplumun kurallarının bulunduğunu vurgulamıştır. İnsani kalkınma yaklaşımı ölçütü gelirden insanların yapabilirliklerine taşımıştır. Doğu Asya üzerine yapılan çalışmalar ise bu ülkelerin başarısının serbest piyasadan değil, piyasayı yönlendiren yetkin bir devletten kaynaklandığını ortaya koymuştur. Dünya Bankası da 1997 Dünya Kalkınma Raporu'nda iyi yönetişim ve etkin devlet kavramlarını benimsemiştir. Bu yeni çerçeve <b>Post-Washington Uzlaşması</b> olarak anılmaktadır.</p>
+          </div>
+          <div class="duo">
+            <section><h3>Dönemin özellikleri ve tarihsel arka plan</h3><ul>
+              <li><b>Sosyalist ekonomilerin piyasa ekonomisine geçişi:</b> Rusya'da şok terapisi, Çin'de kademeli reform modeli uygulanmıştır.</li>
+              <li><b>Küreselleşme:</b> Dünya Ticaret Örgütü 1995'te kurulmuş, uluslararası sermaye akımları hızlanmıştır.</li>
+              <li><b>Finansal krizler:</b> Meksika (1994), Asya (1997), Rusya (1998) ve Brezilya (1999) krizleri yaşanmıştır.</li>
+              <li><b>Rio Zirvesi (1992):</b> Gündem 21 ve BM İklim Değişikliği Çerçeve Sözleşmesi kabul edilmiştir.</li>
+              <li><b>Borç girişimleri:</b> Ağır Borçlu Yoksul Ülkeler (HIPC) girişimi 1996'da başlatılmıştır.</li>
+            </ul></section>
+            <section><h3>Ana temalar ve yaklaşımlar</h3><ul>
+              <li><b>Kurumsal iktisat ve işlem maliyetleri:</b> Kurumlar kalkınmanın temel belirleyicisi olarak kabul edilmiştir.</li>
+              <li><b>İyi yönetişim ve hukuk devleti:</b> Yolsuzlukla mücadele, mülkiyet hakları ve şeffaflık öncelikli hedefler arasına girmiştir.</li>
+              <li><b>İnsani kalkınma ve sürdürülebilirlik:</b> Kalkınmanın gelirin ötesinde sağlık, eğitim ve özgürlükleri kapsadığı vurgulanmıştır.</li>
+              <li><b>Kalkınmacı devlet:</b> Piyasayı yönlendiren seçici sanayi politikalarının rolü incelenmiştir.</li>
+              <li><b>Piyasa başarısızlıklarının yeniden ele alınması:</b> Bilgi sorunları ve düzenlemenin önemi gündeme gelmiştir.</li>
+            </ul></section>
+          </div>
+          <details class="mdl"><summary><h3><span class="chev" aria-hidden="true"></span>Modeller ve kuramlar <span class="hint">(detaylar için tıklayınız)</span></h3></summary>
+            <div class="models">
+              <div class="model"><div class="mh"><b>Kurumlar ve işlem maliyetleri</b><span class="by">North · 1990 · Nobel 1993</span></div>
+                <p>North'a göre kurumlar, biçimsel (anayasa, yasalar, mülkiyet hakları) ve biçimsel olmayan (gelenekler, normlar) toplumsal kurallardır. Kurumlar işlem maliyetlerini düşürerek mübadeleyi ve yatırımı mümkün kılar.</p>
+                <p class="key"><b>Yol bağımlılığı:</b> Kurumlar tarihsel süreç içinde evrilir. Verimsiz kurumlar, bu kurumlardan çıkar sağlayan grupların varlığı nedeniyle uzun süre varlığını koruyabilir.</p></div>
+              <div class="model"><div class="mh"><b>Yapabilirlik yaklaşımı</b><span class="by">Sen · 1999 · Nobel 1998</span></div>
+                <p>Sen'e göre belirleyici olan gelir değil, bireyin gerçekleştirebildiği işlevler (sağlıklı olmak, okuryazar olmak, toplumsal yaşama katılmak) ve bu işlevler arasında seçim yapabilme özgürlüğüdür. Aynı gelir düzeyi farklı bireylerde farklı yapabilirliklere dönüşmektedir.</p>
+                <p class="key"><b>Özgürlükle Kalkınma:</b> Özgürlük kalkınmanın hem amacı hem de aracıdır. Sen, işleyen demokrasilerde büyük kıtlıkların yaşanmadığını ortaya koymuştur.</p></div>
+              <div class="model"><div class="mh"><b>İnsani Gelişme Endeksi (İGE)</b><span class="by">Mahbub ul Haq ve UNDP · 1990</span></div>
+                <p>Endeks üç boyuttan oluşmaktadır: sağlık (doğuşta beklenen yaşam süresi), eğitim (ortalama ve beklenen okullaşma süresi) ve yaşam standardı (kişi başı gelir). İlk İnsani Gelişme Raporu'nun yayımlanmasıyla ülke sıralamalarının gelir sıralamasından farklılaşabildiği görülmüştür.</p></div>
+              <div class="model wide"><div class="mh"><b>Doğu Asya mucizesi ve kalkınmacı devlet</b><span class="by">1982 – 1995</span></div>
+                <p><b>Johnson (1982)</b>, Japonya'da Uluslararası Ticaret ve Sanayi Bakanlığı'nın (MITI) öncü rolünü inceleyerek "kalkınmacı devlet" kavramını literatüre kazandırmıştır. <b>Amsden (1989)</b>, Güney Kore'de devletin fiyatları bilinçli olarak yönlendirdiğini ve sübvansiyonları ihracat performansı şartına bağlayarak firmaları disipline ettiğini göstermiştir. <b>Wade (1990)</b>, Tayvan deneyimini "piyasayı yönetmek" kavramıyla açıklamıştır. <b>Evans (1995)</b> ise başarının temelinde "gömülü özerklik" bulunduğunu ileri sürmüştür; bu kavram, iş dünyasıyla yakın ilişki içinde olan ancak onun etkisi altına girmeyen, liyakate dayalı bir bürokrasiyi ifade etmektedir.</p>
+                <p><b>Dünya Bankası'nın Doğu Asya Mucizesi raporu (1993)</b> ise başarıyı ağırlıklı olarak makroekonomik istikrar, yüksek tasarruf oranı ve eğitim gibi temel koşulların sağlanmasına bağlamış, sanayi politikasının etkisini sınırlı bulmuştur. Rapor, iki görüş arasında tartışmalı bir uzlaşma metni olarak değerlendirilmiştir.</p></div>
+              <div class="model"><div class="mh"><b>Post-Washington Uzlaşması</b><span class="by">Stiglitz · 1998</span></div>
+                <p>Stiglitz'e göre bilgi asimetrisi nedeniyle piyasalar, özellikle finans piyasaları, eksik işlemekte ve başarısızlığa uğramaktadır. Devletin düzenleme, rekabet politikası, sosyal güvenlik ağları ve eğitim yoluyla tamamlayıcı bir rol üstlenmesi gerekmektedir. Kalkınmanın hedefleri büyümenin ötesine geçerek eşitlik, sürdürülebilirlik ve demokrasiyi kapsamalıdır. Stiglitz ayrıca IMF'nin Asya krizindeki politikalarını eleştirmiştir.</p></div>
+              <div class="model"><div class="mh"><b>Yeni ekonomik coğrafya</b><span class="by">Krugman · 1991</span></div>
+                <p>Ölçek ekonomileri ve taşıma maliyetleri nedeniyle sanayi belirli merkezlerde yoğunlaşmaktadır. Başlangıçtaki küçük farklılıklar kalıcı bir merkez–çevre ayrışmasına dönüşebilmektedir. Model, Myrdal'ın kümülatif nedensellik fikrini biçimsel olarak modellemektedir.</p></div>
+              <div class="model"><div class="mh"><b>Kalkınma sonrası (post-development) eleştirisi</b><span class="by">Escobar 1995 · Sachs (ed.) 1992</span></div>
+                <p>Bu yaklaşıma göre kalkınma, Batı'nın gelişmekte olan ülkeleri "az gelişmiş" olarak tanımlayarak kendi modelini yaygınlaştırdığı bir söylemdir. Escobar'ın <i>Kalkınmayla Karşılaşmak</i> ve Wolfgang Sachs'ın derlediği <i>Kalkınma Sözlüğü</i> adlı eserler yerel bilgiyi ve toplumsal hareketleri alternatif olarak öne çıkarmıştır.</p></div>
+            </div>
+          </details>
+          <section class="crit"><h3>Eleştiriler</h3><ul>
+            <li><b>Kurumsal yaklaşımın uygulanabilirliği:</b> Hangi kurumların hangi yöntemle oluşturulacağı belirsiz kalmıştır. İyi yönetişim gündemi gelişmekte olan ülkelere kapsamlı yeni koşullar getirmiştir; Grindle bu nedenle "yeterince iyi yönetişim" kavramını önermiştir.</li>
+            <li><b>İnsani Gelişme Endeksi'nin sınırlılıkları:</b> Endeksin boyutlarının ağırlıklandırılması keyfi bulunmuş, gelir dağılımı ve çevresel sürdürülebilirlik başlangıçta kapsam dışında kalmıştır. Bu eleştiriler üzerine eşitsizliğe göre düzeltilmiş endeksler geliştirilmiştir.</li>
+            <li><b>Kalkınmacı devlet modelinin aktarılabilirliği:</b> Doğu Asya'nın başarısının toprak reformu, Soğuk Savaş döneminde sağlanan dış destek ve güçlü bürokrasi gibi özgün tarihsel koşullara dayandığı ileri sürülmüştür.</li>
+            <li><b>Kalkınma sonrası yaklaşımın sınırlılıkları:</b> Yaklaşım güçlü bir eleştiri sunmuş, ancak uygulanabilir somut bir alternatif ortaya koyamamıştır.</li>
+            <li><b>Post-Washington Uzlaşması'nın sınırlılıkları:</b> Eleştirmenlere göre bu yaklaşım politika setini değiştirmekten çok genişletmiş, piyasa merkezli çerçeveyi korumuştur.</li>
+          </ul></section>
+          <p class="turn"><b>Kırılma noktası:</b> 1997 Asya krizi ve geçiş ekonomilerinin deneyimleri, tüm ülkelere aynı politika setinin önerilmesinin sınırlarını göstermiştir. 2000'li yıllarda daha temkinli, kanıta dayalı ve çoğulcu bir kalkınma iktisadı gelişmiştir.</p>
+        </div>
+      </article>
+
+<!-- ============ 7. 2000'LER ============ -->
+      <div class="mark" id="d2000"></div>
+      <article class="card" style="--i:6;--ec:var(--e7)">
+        <header class="chrome"><span class="yrs">2000 – günümüz</span><span class="pos">07 / 08</span></header>
+        <div class="body">
+          <h2>Güncel Tartışmalar: Kanıt, Kurumlar, Eşitsizlik ve Gezegen</h2>
+          <div class="intro">
+            <p>2000'li yıllarda kalkınma iktisadı, kapsamlı kuramlardan çok belirli sorulara kanıt arayan, çok disiplinli ve veri temelli bir alana dönüşmüştür. BM Binyıl Kalkınma Hedefleri (2000) yoksulluğun azaltılmasını ölçülebilir hedeflere bağlamış; bu hedefler 2015'te evrensel nitelikli ve çevreyi merkeze alan Sürdürülebilir Kalkınma Amaçları ile yenilenmiştir. Çin'in yükselişi yüz milyonlarca kişinin yoksulluktan kurtulmasını sağlamış ve Washington Uzlaşması'ndan farklı bir kalkınma yolunun mümkün olduğunu göstermiştir.</p>
+            <p>Bu dönemde tartışmalar birkaç temel eksende yoğunlaşmıştır. Kalkınmanın kapsamlı planlarla mı yoksa küçük ölçekli deneylerle mi sağlanacağı, kurumların mı coğrafyanın mı belirleyici olduğu, sanayi politikasının yeniden uygulanıp uygulanmaması gerektiği, büyümenin faydalarının nasıl paylaşıldığı ve gezegenin sınırları içinde büyümenin mümkün olup olmadığı bu eksenlerin başında gelmektedir. 2008 krizi, COVID-19 salgını, iklim değişikliği ve yapay zekâ bu soruların önemini artırmıştır.</p>
+          </div>
+          <div class="duo">
+            <section><h3>Dönemin özellikleri ve tarihsel arka plan</h3><ul>
+              <li><b>Küresel hedefler:</b> Binyıl Kalkınma Hedefleri 2000–2015, Sürdürülebilir Kalkınma Amaçları 2015–2030 dönemini kapsamaktadır.</li>
+              <li><b>Çin'in yükselişi:</b> Çin 2001'de Dünya Ticaret Örgütü'ne katılmış, küresel üretim merkezi haline gelmiş ve Kuşak ve Yol Girişimi'ni başlatmıştır.</li>
+              <li><b>Emtia fiyatlarındaki yükseliş ve 2008 krizi:</b> Uzun süreli emtia fiyatı artışını 2008 küresel finans krizi izlemiştir.</li>
+              <li><b>Paris İklim Anlaşması (2015):</b> Anlaşma kabul edilmiş, AB ise Yeşil Mutabakat'ı açıklamıştır.</li>
+              <li><b>COVID-19 salgını:</b> Yoksulluğun azaltılmasında elde edilen kazanımlar gerilemiş, gelişmekte olan ülkelerde borç sorunu derinleşmiştir.</li>
+              <li><b>Dijital dönüşüm:</b> Dijital teknolojiler ve yapay zekâ kalkınma gündeminin önemli bir parçası haline gelmiştir.</li>
+            </ul></section>
+            <section><h3>Ana odaklar</h3><ul>
+              <li><b>Çok disiplinli ve veri temelli yaklaşım:</b> Deneysel yöntemler, büyük veri ve uydu görüntüleri yaygın biçimde kullanılmaktadır.</li>
+              <li><b>Küresel eşitsizlik:</b> Ülkeler arası ve ülke içi gelir dağılımı yakından incelenmektedir.</li>
+              <li><b>İklim değişikliği ve sürdürülebilir kalkınma:</b> Çevresel sınırlar kalkınma tartışmalarının merkezine yerleşmiştir.</li>
+              <li><b>Kalkınmanın politik ekonomisi:</b> Kurumlar ve güç ilişkileri analizlerin odağında yer almaktadır.</li>
+              <li><b>Yerelleşme:</b> Bağlama duyarlı ve deneyimden öğrenmeye açık politikalar öne çıkmaktadır.</li>
+            </ul></section>
+          </div>
+          <details class="mdl"><summary><h3><span class="chev" aria-hidden="true"></span>Tartışma eksenleri ve yaklaşımlar <span class="hint">(detaylar için tıklayınız)</span></h3></summary>
+            <div class="models">
+              <div class="model wide"><div class="mh"><b>Mikro temelli kalkınma ve rastgele kontrollü deneyler (RKD)</b><span class="by">Banerjee · Duflo · Kremer · Nobel 2019</span></div>
+                <p>Tıptaki klinik deneylerden uyarlanan bu yöntemde, bir müdahale (ders kitabı dağıtımı, parazit tedavisi, mikrokredi gibi) rastgele seçilen bir gruba uygulanmakta ve sonuçlar kontrol grubuyla karşılaştırılarak etkisi ölçülmektedir. 2003'te kurulan J-PAL bu yaklaşımın yaygınlaşmasında öncü rol oynamıştır. Kenya'da parazit tedavisinin okula devamı artırdığı, mikrokredinin ise beklenenden sınırlı etki yarattığı yönündeki bulgular politika tasarımını etkilemiştir. Yöntem başta eğitim, sağlık ve mikrokredi olmak üzere geniş bir alanda uygulanmıştır.</p>
+                <p class="key"><b>Eleştiriler:</b> Bir bağlamda elde edilen sonuçlar başka bağlamlara genellenemeyebilir (dış geçerlilik sorunu). Yöntem sanayileşme ve kurumlar gibi makro düzeydeki soruları kapsam dışında bırakmakta ve siyasi bağlamı göz ardı etmektedir (Deaton, Pritchett).</p></div>
+              <div class="model"><div class="mh"><b>Dış yardım tartışması</b><span class="by">2005 – 2009</span></div>
+                <p><b>Sachs</b> (<i>Yoksulluğun Sonu</i>, 2005), yoksulluk tuzağından çıkılabilmesi için dış yardımın önemli ölçüde artırılması gerektiğini savunmuştur. <b>Easterly</b> (<i>Beyaz Adamın Yükü</i>, 2006), yukarıdan aşağı planların başarısız olduğunu ve yerel çözümlere öncelik verilmesi gerektiğini ileri sürmüştür. <b>Moyo</b> (<i>Ölü Yardım</i>, 2009) ise dış yardımın bağımlılık ve yolsuzluk yarattığını öne sürmüştür.</p></div>
+              <div class="model"><div class="mh"><b>Davranışsal kalkınma iktisadı</b><span class="by">Mullainathan ve Shafir · 2013</span></div>
+                <p>Mullainathan ve Shafir <i>Kıtlık</i> adlı eserlerinde yoksulluğun bireylerin zihinsel kapasitesini daralttığını ileri sürmüştür. Bu yaklaşıma göre yetersiz kararlar yoksulluğun nedeni olduğu kadar sonucu da olabilir. Dünya Bankası'nın 2015 tarihli <i>Zihin, Toplum ve Davranış</i> raporu bu yaklaşımı politika tasarımına yansıtmıştır.</p></div>
+              <div class="model wide"><div class="mh"><b>Kurumlar, yönetişim ve politik ekonomi</b><span class="by">Acemoğlu · Johnson · Robinson · Nobel 2024</span></div>
+                <p><b>Acemoğlu, Johnson ve Robinson (2001)</b>, sömürgecilerin karşılaştığı yerleşim koşullarının kurulan kurumları, bu kurumların da günümüzdeki gelir düzeyini belirlediğini ortaya koymuştur. <b>Ulusların Düşüşü (2012)</b> adlı eserde ana tez şu şekilde ifade edilmektedir: Geniş siyasi katılıma, güvenceli mülkiyet haklarına ve rekabete açık piyasalara dayanan <b>kapsayıcı kurumlar</b> kalıcı kalkınmayı sağlar. Kaynakları dar bir elit kesime aktaran <b>sömürücü kurumlar</b> ise büyüme sağlasa bile bu büyüme kısa vadeli ve sürdürülemez niteliktedir. Bu yaklaşım, North'un tarihsel kurumsal evrim analizini sürdürmektedir.</p>
+                <p><b>Coğrafya ve kurumlar tartışması:</b> Sachs ve Diamond iklimin, hastalık yükünün (özellikle sıtmanın) ve denize erişimin belirleyici olduğunu savunmuştur. Sachs ve Warner'ın <b>doğal kaynak laneti</b> çalışması, doğal kaynak bakımından zengin ülkelerin neden daha yavaş büyüdüğünü incelemiştir (Hollanda hastalığı, rant ve çatışma). <b>De Soto</b> ise kayıt dışılığa dikkat çekmiş ve tapusu bulunmayan varlıkların teminat olarak kullanılamadığı için "ölü sermaye" niteliği taşıdığını ileri sürmüştür.</p>
+                <p class="key"><b>Eleştiriler:</b> Kurumların ölçülmesi ve nedensellik iddiaları tartışmalı bulunmaktadır. Çin'in kapsayıcı olarak nitelendirilmesi güç kurumlarla hızlı büyümesi bu teze yönelik önemli bir itiraz oluşturmaktadır.</p></div>
+              <div class="model wide"><div class="mh"><b>Sanayi politikasının yeniden gündeme gelmesi</b><span class="by">2002 – günümüz</span></div>
+                <p><b>Ha-Joon Chang</b> (<i>Merdiveni Tekmelemek</i>, 2002), günümüzün gelişmiş ülkelerinin korumacılık ve sübvansiyonlarla sanayileştiğini, ancak bugün gelişmekte olan ülkelerin aynı politikaları uygulamasını engellediğini ileri sürmüştür. <b>Dani Rodrik</b>, ülkelerin kendi kalkınma yollarını belirleyebilmeleri için yeterli politika alanına ihtiyaç duyduğunu savunmuş ve tek bir iktisat biliminin farklı politika reçeteleri üretebileceğini vurgulamıştır. <b>Büyüme teşhisi</b> yaklaşımı (Hausmann, Rodrik ve Velasco, 2005), her ülkede büyümenin önündeki en bağlayıcı kısıtın belirlenmesini ve reformların bu kısıt üzerinde yoğunlaştırılmasını önermiştir.</p>
+                <p><b>Justin Lin</b>'in Yeni Yapısalcı İktisat yaklaşımı, devletin karşılaştırmalı üstünlüğe uygun sektörlerin gelişimini kolaylaştırmasını önermektedir. <b>Mariana Mazzucato</b> (<i>Girişimci Devlet</i>, 2013), internet ve GPS gibi temel yeniliklerin arkasında kamu yatırımlarının bulunduğunu göstermiş ve görev odaklı politikaları savunmuştur.</p></div>
+              <div class="model wide"><div class="mh"><b>Yapısal dönüşümde yeni sorunlar</b><span class="by">2010'lar</span></div>
+                <p><b>Orta gelir tuzağı:</b> Düşük ücret avantajını yitiren ancak yenilik kapasitesini yeterince geliştiremeyen ülkeler orta gelir düzeyinde sıkışmaktadır. Türkiye, Brezilya ve Malezya bu tartışmada sıklıkla örnek gösterilmektedir. <b>Erken sanayisizleşme</b> (Rodrik, 2016): Gelişmekte olan ülkelerde sanayinin ekonomideki payı, gelişmiş ülkelerin sanayileştiği gelir düzeyine ulaşılmadan azalmaya başlamaktadır; bu durum sanayiye dayalı büyüme olanaklarını sınırlamaktadır.</p>
+                <p><b>Küresel değer zincirleri:</b> Üretim süreçleri aşamalara bölünmüş, ülkeler sektörler yerine üretim aşamalarında uzmanlaşmaya başlamıştır; bu durum düşük katma değerli aşamalarda sıkışma riskini beraberinde getirmektedir. <b>Ekonomik karmaşıklık</b> (Hausmann ve Hidalgo): Bir ülkenin ürettiği ürünlerin çeşitliliği ve özgünlüğü, o ülkenin birikmiş üretim bilgisini yansıtmakta ve gelecekteki büyüme performansına ilişkin öngörü sunmaktadır. <b>Çin ve Pekin Uzlaşması:</b> Kademeli reform, devlet kapitalizmi, ihracat ve altyapı yatırımlarına dayanan bu model Washington Uzlaşması'na alternatif bir yol olarak değerlendirilmektedir.</p></div>
+              <div class="model"><div class="mh"><b>Gelir ve servet eşitsizliği</b><span class="by">Piketty 2013 · Milanović</span></div>
+                <span class="eq">r &gt; g</span>
+                <p><b>Piketty</b>, sermayenin getiri oranı (r) ekonomik büyüme oranını (g) aştıkça servetin yoğunlaştığını ileri sürmüştür; Piketty'ye göre 20. yüzyılda yaşanan eşitlenme savaşlar ve kamu politikalarının sonucu olan bir istisnadır. <b>Milanović</b>'in fil eğrisi, 1988–2008 döneminde Asya'nın orta sınıfı ile küresel ölçekte en zengin yüzde 1'lik kesimin en fazla kazancı elde ettiğini, gelişmiş ülkelerin alt-orta gelir gruplarının ise gelirlerini artıramadığını göstermiştir.</p>
+                <p class="key"><b>Önemi:</b> Kalkınma, büyümenin düzeyi kadar büyümenin nasıl paylaşıldığıyla da ilgilidir.</p></div>
+              <div class="model"><div class="mh"><b>İklim değişikliği ve sürdürülebilir kalkınma</b><span class="by">Paris 2015 · SKA</span></div>
+                <p><b>Ana yaklaşımlar:</b> Yeşil büyüme yaklaşımı büyümenin emisyonlardan ayrıştırılmasını, adil geçiş yaklaşımı fosil yakıtlara bağımlı işçilerin ve bölgelerin korunmasını hedeflemektedir. Küçülme (degrowth) yaklaşımı ise gelişmiş ülkelerde büyüme hedefinin sorgulanmasını önermektedir.</p>
+                <p><b>Tartışmalar:</b> Sanayileşme hakkı ile çevresel yükümlülükler arasındaki denge, "ortak ancak farklılaştırılmış sorumluluklar" ilkesi, karbon vergileri ve AB'nin Sınırda Karbon Düzenleme Mekanizması (SKDM) tartışmaların başlıca konularını oluşturmaktadır.</p></div>
+              <div class="model"><div class="mh"><b>Kalkınmanın yerelleşmesi ve çeşitliliği</b><span class="by">Rodrik · Pritchett</span></div>
+                <p>Tüm ülkeler için geçerli tek bir politika reçetesi bulunmamaktadır. Aynı politika farklı kurumsal bağlamlarda farklı sonuçlar doğurabilmektedir. Bu nedenle yerel koşullara duyarlı, sorun odaklı ve deneyimden öğrenmeye dayalı yaklaşımlar öne çıkmıştır.</p></div>
+              <div class="model"><div class="mh"><b>Küresel şoklar ve dijital dönüşüm</b><span class="by">2008 · 2020 · günümüz</span></div>
+                <p>2008 krizi ve COVID-19 salgını kalkınma kazanımlarının kırılganlığını ortaya koymuştur. Dijital dönüşüm mobil ödeme sistemleri ve e-devlet uygulamaları gibi fırsatlar sunarken dijital uçurum ve otomasyonun düşük ücret avantajını zayıflatması gibi riskler de taşımaktadır. Yapay zekânın istihdam üzerindeki etkisi yeni bir belirsizlik kaynağı oluşturmaktadır.</p></div>
+            </div>
+          </details>
+          <section class="crit"><h3>Eleştiriler</h3><ul>
+            <li><b>Alanın parçalanması:</b> Mikro düzeyde kanıta odaklanılması, yapısal dönüşüm ve sanayileşme gibi temel soruların gözden kaçırılması riskini doğurmaktadır.</li>
+            <li><b>Kurumsal belirlenimcilik:</b> Tarihsel kurumlara verilen ağırlığın, kamu politikalarının dönüştürücü gücünü küçümsediği ileri sürülmektedir.</li>
+            <li><b>SKA'ların kapsamı:</b> 17 amaç ve 169 hedeften oluşan yapı önceliklerin belirlenmesini güçleştirmektedir.</li>
+            <li><b>Yeşil büyümenin hızı:</b> Emisyonların büyümeden mutlak olarak ayrışması, iklim hedeflerine ulaşmak için gereken hızda gerçekleşmemektedir.</li>
+            <li><b>Sanayi politikasının riskleri:</b> Devlet başarısızlığı ve rant arayışı riskleri yeniden gündeme gelmektedir.</li>
+            <li><b>Kuzey–Güney gerilimi:</b> İklim ve ticaret kurallarının gelişmekte olan ülkelerin politika alanını daralttığı yönünde eleştiriler bulunmaktadır.</li>
+          </ul></section>
+          <p class="turn"><b>Açık soru:</b> Kalkınmanın gezegenin sınırları içinde ve kapsayıcı biçimde nasıl sürdürüleceği, alanın temel sorusu olmaya devam etmektedir.</p>
+        </div>
+      </article>
+
+<!-- ============ 8. TÜRKİYE ============ -->
+      <div class="mark" id="turkiye"></div>
+      <article class="card" style="--i:7;--ec:var(--e8)">
+        <header class="chrome"><span class="yrs">1923 – 2028</span><span class="pos">08 / 08</span></header>
+        <div class="body">
+          <h2>Türkiye'nin Kalkınma Deneyimi</h2>
+          <div class="intro">
+            <p>Türkiye'nin kalkınma politikaları, küresel kalkınma düşüncesindeki dönüşümleri kendi koşulları çerçevesinde izlemiştir. 1930'ların devletçilik politikası dünyadaki planlama eğilimiyle, 1960'ların planlı ithal ikamesi yapısalcı yaklaşımla, 24 Ocak 1980 Kararları neoklasik karşı devrimle, 2001 sonrasında gerçekleştirilen reformlar ise kurumsalcı yaklaşımla aynı döneme denk gelmektedir.</p>
+            <p>Bu süreçte bazı yapısal sorunlar farklı dönemlerde varlığını korumuştur. Düşük yurtiçi tasarruf oranı ve cari açık kısıtı, dış finansmana bağımlı büyüme, teknoloji yoğunluğu düşük ihracat yapısı, bölgesel eşitsizlikler ve kayıt dışılık bu sorunların başında gelmektedir. Güncel tartışmalar bu sorunlar çerçevesinde orta gelir tuzağı ve ikiz dönüşüm konularında yoğunlaşmaktadır.</p>
+          </div>
+          <section><h3>Dönemler</h3>
+            <ol class="tl">
+              <li><span class="y">1923–29</span><span><b>Özel girişim öncülüğü</b>İzmir İktisat Kongresi'nde özel girişimin desteklenmesi kararlaştırılmış; Lozan Antlaşması'nın gümrük kısıtları altında özel sektörü teşvik eden politikalar uygulanmıştır.<span class="link">↔ Düşünsel kökler</span></span></li>
+              <li><span class="y">1930'lar</span><span><b>Devletçilik</b>Büyük Buhran'ın ardından Birinci Beş Yıllık Sanayi Planı (1934) uygulamaya konulmuş, Sümerbank ve Etibank aracılığıyla devlet eliyle sanayileşme sağlanmıştır.<span class="link">↔ Dünyada planlama eğilimi</span></span></li>
+              <li><span class="y">1950'ler</span><span><b>Liberalleşme denemesi</b>Marshall yardımı, tarımda makineleşme ve karayolu yatırımları bu dönemin belirleyici unsurları olmuştur. Dönem, 1958 devalüasyonu ve dış ödemeler kriziyle sona ermiştir.</span></li>
+              <li><span class="y">1960–80</span><span><b>Planlı dönem ve ithal ikamesi</b>Devlet Planlama Teşkilatı 1960'ta kurulmuş, Birinci Beş Yıllık Kalkınma Planı 1963'te uygulamaya konulmuştur. Hızlı sanayileşme süreci 1970'lerin sonunda döviz darboğazı ve 1977–79 kriziyle tıkanmıştır.<span class="link">↔ Yapısalcılık ve ithal ikamesi</span></span></li>
+              <li><span class="y">1980</span><span><b>24 Ocak Kararları</b>İhracata dayalı büyüme stratejisi benimsenmiş, fiyatlar ve döviz kuru serbestleştirilmiş, IMF ve Dünya Bankası destekli yapısal uyum programı uygulanmıştır.<span class="link">↔ Neoklasik karşı devrim</span></span></li>
+              <li><span class="y">1989</span><span><b>Sermaye hesabının serbestleştirilmesi</b>32 Sayılı Karar ile sermaye hareketleri serbestleştirilmiştir. Kısa vadeli sermaye girişlerine bağımlı büyüme kırılganlık yaratmış ve 1994 kriziyle sonuçlanmıştır.</span></li>
+              <li><span class="y">2001</span><span><b>Kriz ve kurumsal reformlar</b>Kriz sonrasında Merkez Bankası'nın bağımsızlığı güçlendirilmiş, Bankacılık Düzenleme ve Denetleme Kurumu başta olmak üzere bağımsız düzenleyici kurumlar etkinleştirilmiş ve kamu maliyesinde disiplin sağlanmıştır.<span class="link">↔ Kurumsalcı yaklaşım</span></span></li>
+              <li><span class="y">2010'lar</span><span><b>Orta gelir tuzağı tartışması</b>Kişi başı gelirin yüksek gelir eşiğine yaklaşamaması orta gelir tuzağı tartışmasını gündeme getirmiştir. İç talebe ve inşaat sektörüne dayalı büyüme modeli tartışılmış, 2018 sonrasında döviz kuru ve enflasyonda dalgalanmalar yaşanmıştır.<span class="link">↔ Yapısal dönüşümde yeni sorunlar</span></span></li>
+              <li><span class="y">2024–28</span><span><b>On İkinci Kalkınma Planı</b>Plan, dijital ve yeşil dönüşümü birlikte ele alan ikiz dönüşüm yaklaşımını benimsemekte; SKDM'ye uyumu ve 2053 net sıfır emisyon hedefini öncelikleri arasında saymaktadır.<span class="link">↔ İklim ve dijital dönüşüm</span></span></li>
+            </ol>
+          </section>
+          <section class="crit"><h3>Eleştiriler ve değerlendirme</h3><ul>
+            <li><b>Planların bağlayıcılığı:</b> 1980 sonrasında kalkınma planlarının yönlendirici etkisi azalmıştır.</li>
+            <li><b>Tasarruf ve cari açık kısıtı:</b> Büyüme dönemleri sıklıkla dış finansman koşullarının bozulmasıyla sona ermiştir.</li>
+            <li><b>Teknoloji yoğunluğu:</b> İhracat ağırlıklı olarak orta-düşük teknolojili ürünlerde yoğunlaşmıştır.</li>
+          </ul></section>
+        </div>
+      </article>
+
+<!-- ============ KAPANIŞ ============ -->
+      <div class="mark" id="kapanis"></div>
+      <article class="card" style="--i:8;--ec:var(--accent)">
+        <header class="chrome"><span class="yrs">Günümüz</span><span class="pos">Kapanış</span></header>
+        <div class="body">
+          <h2>Kalkınma Düşüncesinin Açık Soruları</h2>
+          <div class="intro"><p>Kalkınma iktisadında her dönem, bir önceki dönemin eksikliklerine yanıt olarak ortaya çıkmıştır. Yapısalcılık klasik iyimserliğe, neoklasik karşı devrim ithal ikamesinin tıkanmasına, kurumsalcılık ise yapısal uyum programlarının sonuçlarına yönelik bir tepki olarak gelişmiştir. Aşağıdaki dört temel gerilim günümüzde de tartışmaların merkezinde yer almaktadır.</p></div>
+          <div class="qs">
+            <div><b>Devlet mi, piyasa mı?</b><span>Tartışma planlamadan serbestleşmeye, ardından kurumlara ve yeni sanayi politikasına doğru evrilmiştir.</span></div>
+            <div><b>Büyüme mi, refah mı?</b><span>Kalkınmanın ölçütü milli gelirden temel ihtiyaçlara, yapabilirliklere ve eşitsizliğe doğru genişlemiştir.</span></div>
+            <div><b>Dışa açıklık mı, politika alanı mı?</b><span>Karşılaştırmalı üstünlük ile bebek endüstri arasındaki tartışma güncelliğini korumaktadır.</span></div>
+            <div><b>Bugün mü, gelecek mi?</b><span>Sanayileşme hakkı ile iklim yükümlülükleri arasında denge kurulması gerekmektedir.</span></div>
+          </div>
+          <a class="btn" href="zihin-haritasi.html">Ayrıntılı zihin haritasını açın ↗</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</main>
+
+<script>
+(function(){
+const $$=s=>[...document.querySelectorAll(s)];
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const easeOut=t=>1-Math.pow(1-t,3);
+const easeIO=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+const marks=$$(".mark"), cards=$$(".card"), items=$$(".rail li"), fill=document.getElementById("fill");
+const col=document.querySelector(".col"), stageName=document.getElementById("stageName");
+
+/* ---------- Ağaç ---------- */
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const R=rng(20261127), MAXD=7, DUR=.112;
+function make(depth,ang,len,t0){
+  const b={depth,ang,len,t0,dur:DUR*(.92+R()*.16),ph:R()*6.283,kids:[],w:Math.pow(.66,depth)};
+  if(depth<MAXD){
+    const n=(depth>0&&depth<4&&R()<.42)?3:2;
+    for(let i=0;i<n;i++){
+      const spread=n===3?(i-1)*.52:(i?1:-1)*(.28+R()*.26);
+      b.kids.push(make(depth+1,(ang+spread+(R()-.5)*.22)*.9,len*(.74+R()*.1),t0+b.dur*(1+R()*.06)));
+    }
+  }
+  return b;
+}
+const TREE=make(0,0,1.25,0);
+const bb={x0:0,x1:0,y0:0};
+(function m(b,x,y){const x2=x+Math.sin(b.ang)*b.len,y2=y-Math.cos(b.ang)*b.len;
+  bb.x0=Math.min(bb.x0,x2);bb.x1=Math.max(bb.x1,x2);bb.y0=Math.min(bb.y0,y2);b.kids.forEach(c=>m(c,x2,y2));})(TREE,0,0);
+bb.x0-=.35;bb.x1+=.35;bb.y0-=.35;
+
+const cv=document.getElementById("tree"), ctx=cv.getContext("2d");
+let W=0,H=0,k=60,bx=0,by=0,alpha=1,C={};
+function readColors(){const cs=getComputedStyle(document.documentElement);
+  ["bark","twig","leaf1","leaf2","leaf3","fruit","ground"].forEach(n=>C[n]=cs.getPropertyValue("--"+n).trim());}
+function layoutTree(){
+  const dpr=Math.min(2,window.devicePixelRatio||1);
+  W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
+  const right=col.getBoundingClientRect().right, free=W-right-24;
+  let x0,x1,y0=H*.06,y1=H-30;
+  if(free>=320){x0=right+16;x1=W-16;alpha=1;}
+  else if(W>=820){x0=Math.max(right-280,W*.5);x1=W-10;alpha=.8;}
+  else{x0=W*.08;x1=W*.96;y0=H*.1;y1=H-24;alpha=.22;}
+  k=Math.min((x1-x0)/(bb.x1-bb.x0),(y1-y0)/(0-bb.y0));
+  bx=(x0+x1)/2-((bb.x0+bb.x1)/2)*k; by=y1;
+}
+const leaves=[],fruits=[];
+function leaf(x,y,a,r,v){if(r<.6)return;leaves.push({x:x+Math.sin(a)*r,y:y-Math.cos(a)*r,r,a:a-Math.PI/2,v});}
+function branch(b,x,y,ge,S,t){
+  const p=clamp((ge-b.t0)/b.dur); if(p<=0)return;
+  const a=b.ang+(reduce?0:Math.sin(t*.0008+b.ph)*.011*b.depth);
+  const L=b.len*k*S*easeOut(p), x2=x+Math.sin(a)*L, y2=y-Math.cos(a)*L;
+  ctx.lineWidth=Math.max(.8,k*.13*b.w*S*(.3+.7*ge));
+  ctx.strokeStyle=b.depth>=5?C.twig:C.bark;
+  ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x2,y2);ctx.stroke();
+  const lr=k*.12*(.55+.45*S)*(b.depth===0?1.7:1);
+  if(p<1){const s=lr*.75*Math.min(1,p*2+.45);leaf(x2,y2,a-.95,s,0);leaf(x2,y2,a+.95,s,1);}
+  if(!b.kids.length&&p>.25){
+    const q=clamp((p-.25)/.75);
+    for(let i=0;i<5;i++)leaf(x2,y2,a+(i-2)*.68+(b.ph-3)*.06,lr*q*(.8+((i*37+b.depth*11)%5)*.07),i);
+    if(ge>.9&&b.ph<1.4)fruits.push({x:x2+Math.sin(a)*lr*.3,y:y2+lr*.45,r:k*S*.05*clamp((ge-.9)/.07)});
+  }
+  if(b.depth>=4&&p===1)leaf((x+x2)/2,(y+y2)/2,a+(b.ph>3?1.1:-1.1),lr*.75,2);
+  for(const c of b.kids)branch(c,x2,y2,ge,S,t);
+}
+let gT=0,gC=0;
+function draw(t){
+  const g=reduce?gT:gC, ge=.05+.95*g, S=.3+.7*easeIO(g);
+  ctx.clearRect(0,0,W,H);
+  ctx.globalAlpha=alpha;
+  ctx.fillStyle=C.ground;ctx.beginPath();ctx.ellipse(bx,by+8,k*(.5+1.5*S),k*.1+8,0,0,6.283);ctx.fill();
+  leaves.length=0;fruits.length=0;ctx.lineCap="round";
+  branch(TREE,bx,by,ge,S,t);
+  const lc=[C.leaf1,C.leaf2,C.leaf3];
+  for(const l of leaves){ctx.fillStyle=lc[l.v%3];ctx.beginPath();ctx.ellipse(l.x,l.y,l.r,l.r*.42,l.a,0,6.283);ctx.fill();}
+  ctx.fillStyle=C.fruit;for(const f of fruits){if(f.r<.5)continue;ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,6.283);ctx.fill();}
+  ctx.globalAlpha=1;
+}
+const stages=[[.06,"Tohum"],[.2,"Fide"],[.42,"Fidan"],[.66,"Genç ağaç"],[.9,"Olgun ağaç"],[1.01,"Meyve veren ağaç"]];
+function loop(t){gC+=(gT-gC)*.07;draw(t);requestAnimationFrame(loop);}
+
+/* ---------- Pencerelerin yapışma noktaları ---------- */
+// Ekrandan uzun pencere, alt kenarı ekranın altına gelince yapışır; ardından sıradaki pencere üstüne kayar.
+function setTops(){
+  cards.forEach(c=>{
+    c.style.top="";
+    const base=parseFloat(getComputedStyle(c).top)||24, h=c.offsetHeight;
+    c.style.top=(h+base+16>H?(H-h-16):base)+"px";
+  });
+}
+
+/* ---------- Kaydırma ---------- */
+let ticking=false;
+function ui(){
+  ticking=false;
+  const max=document.documentElement.scrollHeight-H;
+  gT=max>0?clamp(scrollY/max):0;
+  stageName.textContent=stages.find(s=>gT<s[0])[1];
+  const mid=H*.45, tops=marks.map(m=>m.getBoundingClientRect().top);
+  let a=0;tops.forEach((tp,i)=>{if(tp<=mid)a=i;});
+  if(max-scrollY<4)a=tops.length-1;
+  const frac=a<tops.length-1?clamp((mid-tops[a])/(tops[a+1]-tops[a])):0;
+  items.forEach((li,i)=>{li.classList.toggle("on",i===a);li.classList.toggle("past",i<a);
+    const l=li.querySelector("a");if(i===a)l.setAttribute("aria-current","step");else l.removeAttribute("aria-current");});
+  fill.style.transform="scaleY("+((a+frac)/(items.length-1)).toFixed(4)+")";
+  cards.forEach((c,i)=>{
+    const r=c.getBoundingClientRect();
+    if(r.top<H*.92)c.classList.add("in");
+    let p=0;const n=cards[i+1];
+    if(n&&!reduce){const nr=n.getBoundingClientRect();p=clamp((H-nr.top)/(H*.85));}
+    c.style.setProperty("--cov",p.toFixed(3));
+  });
+  if(reduce)draw(0);
+}
+function resize(){layoutTree();setTops();ui();}
+addEventListener("scroll",()=>{if(!ticking){ticking=true;requestAnimationFrame(ui);}},{passive:true});
+addEventListener("resize",resize);
+document.querySelectorAll("details.mdl").forEach(d=>d.addEventListener("toggle",()=>{setTops();ui();}));
+
+items.forEach((li,i)=>li.querySelector("a").addEventListener("click",e=>{
+  e.preventDefault();
+  const top=i===0?0:marks[i].getBoundingClientRect().top+scrollY-24;
+  scrollTo({top,behavior:reduce?"auto":"smooth"});
+  try{history.replaceState(null,"","#"+marks[i].id);}catch(_){}
+}));
+
+const mq=matchMedia("(prefers-color-scheme: dark)");
+const recolor=()=>{readColors();if(reduce)draw(0);};
+mq.addEventListener?mq.addEventListener("change",recolor):mq.addListener(recolor);
+new MutationObserver(recolor).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme","class"]});
+
+function start(){
+  readColors();resize();
+  const h=location.hash.slice(1), i=marks.findIndex(m=>m.id===h);
+  if(i>0)scrollTo(0,marks[i].getBoundingClientRect().top+scrollY-24);
+  ui();gC=gT;
+  if(reduce)draw(0);else requestAnimationFrame(loop);
+}
+(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(start,start);
+})();
+</script>
+
+</body>
+</html>

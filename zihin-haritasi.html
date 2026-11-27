@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+html{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font:14px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+<title>Kalkınma İktisadı Haritası</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Düzen: dar başlık şeridi + tam genişlikte kaydırılıp yakınlaştırılabilen harita tuvali; aynı veriden üretilen liste görünümü alternatif */
+:root{
+  --bg:#f3f5f9; --surface:#ffffff; --fg:#1a2130; --muted:#5a6477; --line:#d3d9e4; --dot:#dde2ea;
+  --new:#18925a; --fix:#b8700c;
+  --b0:#6b7280; --b1:#3566cc; --b2:#23857f; --b3:#a94f27; --b4:#9e3358; --b5:#6748bd; --b6:#2b7636; --b7:#a87a06;
+  --font-d:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --font-b:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#10141b; --surface:#19202a; --fg:#e5e9f0; --muted:#9aa4b6; --line:#2b3442; --dot:#202834;
+    --new:#3ccb88; --fix:#e8a540;
+    --b0:#a2a9b5; --b1:#7da3f5; --b2:#4fc0b9; --b3:#e2895c; --b4:#e3799f; --b5:#a78ff0; --b6:#6dc47b; --b7:#e2b443;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#10141b; --surface:#19202a; --fg:#e5e9f0; --muted:#9aa4b6; --line:#2b3442; --dot:#202834;
+  --new:#3ccb88; --fix:#e8a540;
+  --b0:#a2a9b5; --b1:#7da3f5; --b2:#4fc0b9; --b3:#e2895c; --b4:#e3799f; --b5:#a78ff0; --b6:#6dc47b; --b7:#e2b443;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-b);font-size:15px;line-height:1.5}
+.wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 28px;max-width:1600px;margin:0 auto;display:grid;gap:14px}
+header{display:grid;gap:6px}
+h1{font-family:var(--font-d);font-weight:700;font-size:clamp(1.4rem,2.6vw,2rem);line-height:1.15;margin:0;text-wrap:balance}
+.lede{margin:0;color:var(--muted);max-width:72ch}
+.bar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+.dot.n{background:var(--new)} .dot.f{background:var(--fix)}
+.legend b{color:var(--fg);font-weight:600;font-variant-numeric:tabular-nums}
+.tools{display:flex;flex-wrap:wrap;gap:6px}
+button{font:500 13px var(--font-b);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:6px 11px;cursor:pointer}
+button:hover{border-color:var(--muted)}
+button:focus-visible,summary:focus-visible{outline:2px solid var(--b1);outline-offset:2px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button{border:0;border-radius:0}
+.seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+#map{position:relative;height:clamp(460px,74vh,940px);border:1px solid var(--line);border-radius:10px;overflow:hidden;
+  background-color:var(--bg);background-image:radial-gradient(var(--dot) 1px,transparent 1px);background-size:18px 18px;touch-action:none}
+#map svg{display:block;width:100%;height:100%;cursor:grab}
+#map svg:active{cursor:grabbing}
+.hint{font-size:12.5px;color:var(--muted);margin:0}
+.links path{fill:none;stroke-width:1.5;stroke-opacity:.55}
+.node rect{stroke-width:1.4}
+.node text{fill:var(--fg);font:400 13px var(--font-b);pointer-events:none}
+.node.d0 text{font:700 17px var(--font-d)}
+.node.d1 text{font:600 14px var(--font-d)}
+.node.has{cursor:pointer}
+.node.has:hover rect{stroke-width:2.4}
+.flag.n{fill:var(--new)} .flag.f{fill:var(--fix)}
+.tog circle{fill:var(--surface);stroke-width:1.4}
+.tog text{font:600 10px var(--font-b)!important;font-variant-numeric:tabular-nums}
+/* Liste görünümü */
+#list{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 18px 18px 8px;overflow-x:auto}
+#list ul{list-style:none;margin:0;padding-left:20px}
+#list>ul{padding-left:8px}
+#list li{margin:3px 0;border-left:2px solid transparent}
+#list li.top{border-left-color:var(--bc);padding-left:10px;margin:10px 0}
+#list summary{cursor:pointer;padding:2px 0}
+#list li.top>details>summary{font:600 16px var(--font-d)}
+.badge{font-size:11px;font-weight:600;letter-spacing:.03em;border-radius:4px;padding:1px 6px;margin-left:8px;vertical-align:1px;white-space:nowrap}
+.badge.n{color:var(--new);border:1px solid var(--new)}
+.badge.f{color:var(--fix);border:1px solid var(--fix)}
+.note{display:block;font-size:12.5px;color:var(--muted);margin:2px 0 4px;max-width:80ch}
+#mdbox{width:100%;min-height:180px;font:12px ui-monospace,Menlo,Consolas,monospace;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:10px}
+.status{font-size:12.5px;color:var(--new);min-height:1em}
+footer{font-size:12.5px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>Kalkınma İktisadının Tarihsel Gelişimi ve Güncel Tartışmalar</h1>
+    <p class="lede">NotebookLM haritasının düzeltilmiş ve genişletilmiş hâli. Yeşil işaretli düğümler yeni eklenenler, turuncu işaretliler düzeltilen ya da yeri değiştirilenler. İşaretli bir düğümün üzerine gelirsen değişikliğin gerekçesi görünür.</p>
+  </header>
+
+  <div class="bar">
+    <div class="legend">
+      <span><i class="dot n"></i>Yeni eklenen: <b id="cn">0</b></span>
+      <span><i class="dot f"></i>Düzeltilen / taşınan: <b id="cf">0</b></span>
+      <span>Toplam düğüm: <b id="ct">0</b></span>
+    </div>
+    <div class="tools">
+      <div class="seg" role="group" aria-label="Görünüm">
+        <button id="vMap" aria-pressed="true">Harita</button>
+        <button id="vList" aria-pressed="false">Liste</button>
+      </div>
+      <button id="bOpen">Tümünü aç</button>
+      <button id="bClose">Daralt</button>
+      <button id="bFit">Ekrana sığdır</button>
+      <button id="bCopy">Markdown'ı kopyala</button>
+    </div>
+  </div>
+
+  <div id="mapView">
+    <div id="map"></div>
+    <p class="hint">Düğümlere tıklayarak dalları aç ya da kapat. Sürükleyerek gezin, fare tekerleği ya da iki parmakla yakınlaştır.</p>
+  </div>
+  <div id="list" hidden></div>
+
+  <div id="mdWrap" hidden>
+    <p class="status" id="mdStatus"></p>
+    <textarea id="mdbox" readonly aria-label="Markdown çıktısı"></textarea>
+  </div>
+
+  <footer>Markdown çıktısı başlık ve madde yapısıyla Markmap, Obsidian ya da XMind gibi araçlara aktarılabilir.</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script>
+const RAW = `Kalkınma İktisadının Tarihsel Gelişimi ve Güncel Tartışmalar
+  + Düşünsel Kökler (Savaş Öncesi)
+    Adam Smith: İş Bölümü ve Piyasanın Genişliği
+    David Ricardo: Karşılaştırmalı Üstünlük
+    Karl Marx: Sermaye Birikimi ve Sınıflar
+    Friedrich List: Bebek Endüstri ve Ulusal Ekonomi Sistemi
+    Joseph Schumpeter: Yenilik ve Girişimci (1911)
+  * 1940'lar: Savaş Sonrası Bağlam ve Disiplinin Doğuşu || Önceki haritadaki "2. Dünya Savaşı Sonrası Doğuş" ve "1940'lar" başlıkları tek dalda birleştirildi.
+    + Tarihsel Bağlam
+      Bretton Woods (1944): IMF ve Dünya Bankası
+      Marshall Planı (1948)
+      Sömürgecilikten Kurtuluş ve Yeni Bağımsız Devletler
+      Truman'ın "Point Four" Konuşması (1949)
+    Ana Temalar
+      Yeniden İnşa ve Kalkınma İhtiyacı
+      Sanayileşme ve Yapısal Dönüşüm
+      Devlet Müdahalesi ve Planlama
+      Sermaye Birikiminin Önceliği
+    Temsilciler ve Modeller
+      Paul Rosenstein-Rodan: Büyük İtme (Big Push) Teorisi (1943)
+      + Harrod–Domar Büyüme Modeli (1939/1946)
+      * Raúl Prebisch ve ECLAC (1949): Yapısalcı Okul, Merkez–Çevre || Önceki haritada "Bağımlılık Okulu" olarak etiketlenmişti. Prebisch ve ECLAC Yapısalcı Okul'dur; Bağımlılık Okulu 1950–60'lar dalına ayrı olarak eklendi.
+  1950'ler ve 1960'lar: Yüksek Kalkınma Teorisi, Modernleşme ve İthal İkamesi
+    Ana Temalar
+      İthal İkameci Sanayileşme (İİS)
+      Dışa Bağımlılığın Azaltılması
+      Sanayileşmenin İç Pazara Yönelmesi
+      Tarımın İkinci Plana Atılması
+      + Kalkınma Planları ve Planlama Örgütleri
+    Yapısalcı Modeller
+      * W. Arthur Lewis: İkili Yapı ve Sınırsız Emek Arzı (1954) || 1940'lar dalından taşındı; model 1954 tarihlidir.
+      * Ragnar Nurkse: Yoksulluğun Kısır Döngüsü, Dengeli Büyüme (1953) || 1940'lar dalından taşındı; eser 1953 tarihlidir.
+      * Prebisch–Singer Tezi (1950): Dış Ticaret Hadlerinin Aleyhe Seyri || Önceden yalnızca Singer'ın adıyla geçiyordu. Tez Prebisch ve Singer'ın 1950'deki ortak bulgusudur.
+      + Albert Hirschman: Dengesiz Büyüme, Geri ve İleri Bağlantılar (1958)
+      + Gunnar Myrdal: Kümülatif Nedensellik (1957)
+    + Modernleşme Kuramı
+      W. W. Rostow: İktisadi Büyümenin Aşamaları (1960)
+      Alexander Gerschenkron: Göreli Geri Kalmışlık ve Geç Sanayileşme (1962)
+    + Neoklasik Büyüme ve Beşeri Sermaye
+      Robert Solow: Neoklasik Büyüme Modeli (1956)
+      Simon Kuznets: Ters-U Eğrisi, Büyüme ve Eşitsizlik (1955)
+      Theodore Schultz: Beşeri Sermaye ve Geleneksel Tarım (1964)
+      Hollis Chenery: Yapısal Dönüşüm Kalıpları
+    + Bağımlılık Okulu (1960'lar–1970'ler)
+      Andre Gunder Frank: Az Gelişmişliğin Gelişmesi
+      Cardoso ve Faletto: Bağımlı Kalkınma
+      Dos Santos, Samir Amin, Arghiri Emmanuel: Eşitsiz Mübadele
+      Immanuel Wallerstein: Dünya-Sistemi Analizi (1974)
+    + Eleştiriler ve Tıkanma
+      Döviz Darboğazı ve Ödemeler Dengesi Sorunları
+      Korumacılığın Doğurduğu Verimsizlik ve Rant
+      Tarımın İhmali ve Kentsel Yanlılık
+  + 1970'ler: Büyümeden Yoksulluğa ve Bölüşüme
+    Dönem Özellikleri
+      Bretton Woods Sisteminin Çöküşü (1971)
+      Petrol Şokları (1973, 1979)
+      Damlama Etkisi (Trickle-down) Beklentisinin Boşa Çıkması
+    Ana Yaklaşımlar
+      Temel İhtiyaçlar Yaklaşımı (ILO, 1976)
+      Büyümeyle Birlikte Yeniden Dağıtım (Chenery vd., 1974)
+      Dünya Bankası'nın McNamara Döneminde Yoksulluğa Yönelmesi
+      Yeni Uluslararası Ekonomik Düzen Talebi (BM, 1974)
+    Toplumsal Cinsiyet ve Kalkınma
+      Ester Boserup: Kalkınmada Kadının Rolü (1970)
+      Kalkınmada Kadın (WID) → Toplumsal Cinsiyet ve Kalkınma (GAD)
+    Nobel 1979: Arthur Lewis ve Theodore Schultz
+  * 1980'ler: Neoklasik Karşı Devrim ve Piyasa Merkezli Yaklaşımlar || Önceki haritada "1970'ler ve 1980'ler" tek başlıktı ama içerik yalnızca 1980'leri anlatıyordu. 1970'ler ayrı dal oldu.
+    Dönem Özellikleri
+      1982 Borç Krizi ve Latin Amerika'nın "Kayıp On Yılı"
+      İthal İkameci Politikaların Tıkanması
+      Neoliberal Politikaların Yükselişi
+    Ana Temalar
+      Piyasa Mekanizmasının Etkinliği
+      + Devlet Başarısızlığı ve Rant Kollama Eleştirisi
+      + Dışa Açık, İhracata Dayalı Büyüme
+      Yapısal Uyum Programları (IMF ve Dünya Bankası)
+    Temsilciler
+      Deepak Lal: Kalkınma İktisadının Sefaleti (1983)
+      Anne Krueger: Rant Kollama Toplumunun Politik Ekonomisi (1974)
+      Bela Balassa: Dışa Açılma ve İhracat Teşviki
+      + Peter Bauer: Dış Yardım Eleştirisi
+    * Washington Uzlaşması (John Williamson, 1989) || Tarih 1990 değil 1989 olarak düzeltildi; 3 madde yerine 10 maddenin tamamı eklendi.
+      Mali Disiplin
+      Kamu Harcamalarında Önceliklerin Değişmesi
+      Vergi Reformu
+      Faiz Oranlarının Serbestleşmesi
+      Rekabetçi Döviz Kuru
+      Ticaretin Serbestleşmesi
+      Doğrudan Yabancı Yatırımların Serbestleşmesi
+      Özelleştirme
+      Deregülasyon
+      Mülkiyet Haklarının Güvenceye Alınması
+    + İçsel Büyüme Teorileri
+      Paul Romer (1986): Bilgi, Fikirler ve Yenilik
+      Robert Lucas (1988): Beşeri Sermaye
+    + Sürdürülebilirlik Kavramının Doğuşu
+      Brundtland Raporu: Ortak Geleceğimiz (1987)
+    + Eleştiriler
+      Yapısal Uyumun Sosyal Maliyetleri ("İnsani Yüzlü Uyum", UNICEF 1987)
+      Afrika ve Latin Amerika'da Durgunluğun Sürmesi
+      Doğu Asya'nın Farklı Başarı Yolu
+  1990'lar: Kurumsalcı, İnsani ve Alternatif Yaklaşımlar
+    + Dönem Özellikleri
+      Sosyalist Ekonomilerin Piyasa Ekonomisine Geçişi
+      1994 Meksika ve 1997 Asya Krizleri
+    Ana Temalar
+      Kurumsal İktisat ve İşlem Maliyetleri (Douglass North, Nobel 1993)
+      İyi Yönetişim ve Hukuk Devleti
+      İnsani Kalkınma ve Sürdürülebilirlik
+    * İnsani Kalkınma || Amartya Sen önceki haritada iki kez geçiyordu; tek düğümde toplandı.
+      Amartya Sen: Yapabilirlik Yaklaşımı, Özgürlükle Kalkınma (1999)
+      + Mahbub ul Haq ve UNDP: İnsani Gelişme Endeksi (1990)
+      + Nobel 1998: Amartya Sen
+    + Doğu Asya Mucizesi ve Kalkınmacı Devlet
+      Chalmers Johnson: MITI ve Japon Mucizesi (1982)
+      Alice Amsden: Fiyatları Bilerek Yanlış Belirlemek (Güney Kore, 1989)
+      Robert Wade: Piyasayı Yönetmek (Tayvan, 1990)
+      Peter Evans: Gömülü Özerklik (1995)
+      Dünya Bankası: Doğu Asya Mucizesi Raporu (1993)
+    + Post-Washington Uzlaşması
+      Joseph Stiglitz: Bilgi Asimetrisi ve Piyasa Başarısızlığı
+      Kurumlar, Düzenleme ve Sosyal Güvenlik Ağları
+    + Yeni Ekonomik Coğrafya
+      Paul Krugman: Yığılma ve Merkez–Çevre (1991)
+    + Kalkınma Sonrası (Post-development) Eleştirisi
+      Arturo Escobar: Kalkınmayla Karşılaşmak (1995)
+      Wolfgang Sachs (ed.): Kalkınma Sözlüğü (1992)
+  2000'ler ve Sonrası: Güncel Tartışmalar
+    Ana Odaklar
+      Çok Disiplinli ve Veri Temelli Yaklaşım
+      Küresel Eşitsizlik
+      İklim Değişikliği
+      Sürdürülebilir Kalkınma
+    + Küresel Hedefler
+      Binyıl Kalkınma Hedefleri (2000–2015)
+      Sürdürülebilir Kalkınma Amaçları (2015–2030)
+    + Dış Yardım Tartışması
+      Jeffrey Sachs: Yoksulluğun Sonu (2005)
+      William Easterly: Beyaz Adamın Yükü (2006)
+      Dambisa Moyo: Ölü Yardım (2009)
+    Mikro Temelli Kalkınma ve Rastgele Kontrollü Deneyler (RKD)
+      Temel Yöntem: Rastgele Kontrollü Deneyler
+      Esther Duflo, Abhijit Banerjee, Michael Kremer (Nobel 2019)
+      Etki Analizinin Yaygınlaşması
+      Uygulama Alanları: Eğitim, Sağlık, Mikrokredi
+      Eleştiriler: Makroya Genellenemez, Politik Bağlamı Göz Ardı Eder (Deaton)
+    + Davranışsal Kalkınma İktisadı
+      Mullainathan ve Shafir: Kıtlık (2013)
+      Dünya Bankası Kalkınma Raporu: Zihin, Toplum ve Davranış (2015)
+    Kurumlar, Yönetişim ve Politik Ekonomi
+      Temsilciler
+        Douglass North: Tarihsel Kurumsal Evrim
+        + Acemoğlu, Johnson ve Robinson: Kurumların Sömürgeci Kökenleri (2001)
+        Acemoğlu ve Robinson: Ulusların Düşüşü (2012)
+        + Nobel 2024: Acemoğlu, Johnson ve Robinson
+      Ana Tez
+        Kapsayıcı Kurumlar → Kalıcı Kalkınma
+        Sömürücü Kurumlar → Kısa Vadeli, Sürdürülemez Büyüme
+      + Coğrafya mı, Kurumlar mı?
+        Jeffrey Sachs ve Jared Diamond: Coğrafya ve Hastalık Yükü
+        Doğal Kaynak Laneti (Sachs ve Warner)
+        Hernando de Soto: Kayıt Dışılık ve Ölü Sermaye
+    + Sanayi Politikasının Geri Dönüşü
+      * Ha-Joon Chang: Merdiveni Tekmelemek (2002) || 1990'lar dalından taşındı; ana eseri 2002 tarihlidir.
+      * Dani Rodrik: Politika Alanı, Tek Reçeteye Karşı Çıkış || 1990'lar ve 2000'lerde iki ayrı yerde geçiyordu; burada birleştirildi.
+      Büyüme Teşhisi (Hausmann, Rodrik, Velasco, 2005)
+      Justin Yifu Lin: Yeni Yapısalcı İktisat
+      Mariana Mazzucato: Girişimci Devlet (2013)
+    + Yapısal Dönüşümde Yeni Sorunlar
+      Orta Gelir Tuzağı
+      Erken Sanayisizleşme (Rodrik, 2016)
+      Küresel Değer Zincirleri
+      Ekonomik Karmaşıklık (Hausmann ve Hidalgo)
+      Çin'in Yükselişi ve "Pekin Uzlaşması"
+    Gelir ve Servet Eşitsizliği
+      Thomas Piketty: Yirmi Birinci Yüzyılda Kapital (2013)
+      Branko Milanović: Fil Eğrisi ve Küresel Eşitsizlik
+      Önem: Büyümenin Nasıl Paylaşıldığı
+    İklim Değişikliği ve Sürdürülebilir Kalkınma
+      Ana Yaklaşımlar
+        Yeşil Büyüme
+        + Adil Geçiş
+        + Küçülme (Degrowth) Tartışması
+      Tartışmalar
+        Sanayileşme ve Çevresel Yükümlülük Dengesi
+        Karbon Vergileri ve Kalkınma
+        + Sınırda Karbon Düzenleme Mekanizması (AB SKDM)
+        + Ortak Ama Farklılaştırılmış Sorumluluklar
+    * Kalkınmanın Yerelleşmesi ve Çeşitliliği || İngilizce "one-size-fits-all" ifadesi Türkçeleştirildi.
+      Herkese Uyan Tek Reçete Yoktur (Rodrik)
+      Yerel Bağlama Duyarlı Çözümler
+    + Küresel Şoklar
+      2008 Küresel Finans Krizi
+      COVID-19 Salgını ve Gelişmekte Olan Ülkelerde Borç Sorunu
+    Dijital Dönüşüm ve Kalkınma Politikaları
+      Fırsatlar ve Riskler
+      + Dijital Uçurum
+      + Yapay Zekâ, Otomasyon ve İstihdam
+      Türkiye 2024–2028 Kalkınma Planı
+        Dijital ve Yeşil Dönüşüm (İkiz Dönüşüm)
+      Dijital Sürdürülebilir Kalkınma Projesi
+  + Türkiye'nin Kalkınma Deneyimi
+    1930'lar: Devletçilik ve Birinci Beş Yıllık Sanayi Planı (1934)
+    1963: DPT ve Planlı Dönem, İthal İkameci Sanayileşme
+    24 Ocak 1980 Kararları: Yapısal Uyum ve Dışa Açılma
+    1989: Sermaye Hesabının Serbestleştirilmesi
+    2001 Krizi ve Kurumsal Reformlar (Bağımsız Düzenleyici Kurullar)
+    2010'lar: Orta Gelir Tuzağı Tartışması
+    12. Kalkınma Planı (2024–2028)`;
+
+function parse(raw){
+  let root=null; const stack=[];
+  for(const line of raw.split("\n")){
+    if(!line.trim()) continue;
+    const ind=line.match(/^ */)[0].length/2;
+    let s=line.trim(), f=null, note=null;
+    if(s.startsWith("+ ")){f="n";s=s.slice(2);} else if(s.startsWith("* ")){f="f";s=s.slice(2);}
+    const k=s.indexOf(" || "); if(k>=0){note=s.slice(k+4);s=s.slice(0,k);}
+    const node={t:s,f,note,c:[]};
+    if(ind===0){root=node;stack[0]=node;}
+    else{stack[ind-1].c.push(node);stack[ind]=node;stack.length=ind+1;}
+  }
+  return root;
+}
+const DATA=parse(RAW);
+
+// sayımlar
+(function(){let n=0,f=0,t=0;(function w(d){t++;if(d.f==="n")n++;if(d.f==="f")f++;d.c.forEach(w);})(DATA);
+  document.getElementById("cn").textContent=n;document.getElementById("cf").textContent=f;document.getElementById("ct").textContent=t;})();
+
+// Markdown
+function toMd(){
+  const out=["# "+DATA.t,""];
+  DATA.c.forEach(era=>{
+    out.push("## "+era.t);
+    (function w(d,lv){d.c.forEach(c=>{out.push("  ".repeat(lv)+"- "+c.t);w(c,lv+1);});})(era,0);
+    out.push("");
+  });
+  return out.join("\n");
+}
+
+// Liste görünümü
+function label(n){
+  const frag=document.createDocumentFragment();
+  frag.append(document.createTextNode(n.t));
+  if(n.f){const b=document.createElement("span");b.className="badge "+n.f;b.textContent=n.f==="n"?"Yeni":"Düzeltildi";frag.append(b);}
+  if(n.note){const p=document.createElement("span");p.className="note";p.textContent=n.note;frag.append(p);}
+  return frag;
+}
+function buildList(){
+  const host=document.getElementById("list");
+  const h=document.createElement("strong");h.style.font="700 18px var(--font-d)";h.style.paddingLeft="8px";h.textContent=DATA.t;
+  const ul=document.createElement("ul");
+  DATA.c.forEach((era,i)=>ul.append(li(era,1,i)));
+  host.append(h,ul);
+  function li(n,depth,bi){
+    const el=document.createElement("li");
+    if(depth===1){el.className="top";el.style.setProperty("--bc","var(--b"+bi+")");}
+    if(n.c.length){
+      const det=document.createElement("details");det.open=depth<3;
+      const sum=document.createElement("summary");sum.append(label(n));det.append(sum);
+      const u=document.createElement("ul");n.c.forEach(c=>u.append(li(c,depth+1,bi)));det.append(u);el.append(det);
+    } else el.append(label(n));
+    return el;
+  }
+}
+buildList();
+
+// Harita
+const DUR=matchMedia("(prefers-reduced-motion: reduce)").matches?0:350;
+const ROW=30,GAP=60;
+const box=document.getElementById("map");
+const ctx=document.createElement("canvas").getContext("2d");
+function fontOf(d){return d.depth===0?'700 17px "Bricolage Grotesque", system-ui, sans-serif':d.depth===1?'600 14px "Bricolage Grotesque", system-ui, sans-serif':'400 13px "IBM Plex Sans", system-ui, sans-serif';}
+function hOf(d){return d.depth===0?36:d.depth===1?28:24;}
+function col(d){return d.branch<0?"var(--fg)":"var(--b"+d.branch+")";}
+
+const root=d3.hierarchy(DATA,d=>d.c.length?d.c:null);
+let uid=0;
+root.each(d=>{d.id=++uid;d._all=d.children||null;d.branch=d.depth===0?-1:d.depth===1?d.parent.children.indexOf(d):d.parent.branch;});
+function walk(d,f){f(d);(d._all||[]).forEach(c=>walk(c,f));}
+function setDepth(n){walk(root,d=>{if(d._all)d.children=d.depth<n?d._all:null;});}
+
+const svg=d3.select(box).append("svg").attr("role","img").attr("aria-label","Kalkınma iktisadı zihin haritası");
+const g=svg.append("g"),gl=g.append("g").attr("class","links"),gn=g.append("g").attr("class","nodes");
+const zoom=d3.zoom().scaleExtent([0.15,2.5]).on("zoom",e=>g.attr("transform",e.transform));
+svg.call(zoom).on("dblclick.zoom",null);
+const tree=d3.tree().nodeSize([ROW,1]).separation((a,b)=>a.parent===b.parent?1:1.3);
+function diag(s,t){const m=(s.y+t.y)/2;return "M"+s.y+","+s.x+"C"+m+","+s.x+" "+m+","+t.x+" "+t.y+","+t.x;}
+function measure(d){ctx.font=fontOf(d);return Math.ceil(ctx.measureText(d.data.t).width)+20+(d.data.f?11:0);}
+
+function update(src){
+  tree(root);
+  const nodes=root.descendants(),links=root.links();
+  const maxW=[];
+  nodes.forEach(d=>{if(!d.w)d.w=measure(d);maxW[d.depth]=Math.max(maxW[d.depth]||0,d.w);});
+  const off=[0];for(let i=1;i<maxW.length;i++)off[i]=off[i-1]+maxW[i-1]+GAP;
+  nodes.forEach(d=>{d.y=off[d.depth];});
+  const sx=src.x0??src.x, sy=(src.y0??src.y)+src.w;
+
+  const node=gn.selectAll("g.node").data(nodes,d=>d.id);
+  const en=node.enter().append("g")
+    .attr("class",d=>"node d"+Math.min(d.depth,2)+(d._all?" has":""))
+    .attr("transform","translate("+sy+","+sx+")").attr("opacity",0)
+    .on("click",(e,d)=>{if(!d._all)return;d.children=d.children?null:d._all;update(d);});
+  en.append("title").text(d=>d.data.t+(d.data.note?"\n\n"+d.data.note:""));
+  en.append("rect").attr("y",d=>-hOf(d)/2).attr("height",hOf).attr("width",d=>d.w).attr("rx",6)
+    .style("stroke",col)
+    .style("fill",d=>d.depth===0?"color-mix(in srgb, var(--fg) 7%, var(--surface))":d.depth===1?"color-mix(in srgb, "+col(d)+" 17%, var(--surface))":"var(--surface)");
+  en.filter(d=>d.data.f).append("circle").attr("cx",11).attr("r",3.6).attr("class",d=>"flag "+d.data.f);
+  en.append("text").attr("x",d=>10+(d.data.f?11:0)).attr("dy","0.35em").text(d=>d.data.t);
+  const tg=en.filter(d=>d._all).append("g").attr("class","tog").attr("transform",d=>"translate("+(d.w+10)+",0)");
+  tg.append("circle").attr("r",8.5).style("stroke",col);
+  tg.append("text").attr("text-anchor","middle").attr("dy","0.35em");
+  const all=en.merge(node);
+  all.transition().duration(DUR).attr("transform",d=>"translate("+d.y+","+d.x+")").attr("opacity",1);
+  all.select("g.tog text").text(d=>d.children?"−":d._all.length);
+  node.exit().transition().duration(DUR).attr("transform","translate("+(src.y+src.w)+","+src.x+")").attr("opacity",0).remove();
+
+  const link=gl.selectAll("path").data(links,d=>d.target.id);
+  const le=link.enter().append("path").style("stroke",d=>col(d.target)).attr("d",()=>{const o={x:sx,y:sy};return diag(o,o);});
+  le.merge(link).transition().duration(DUR).attr("d",d=>diag({x:d.source.x,y:d.source.y+d.source.w+18.5},{x:d.target.x,y:d.target.y}));
+  link.exit().transition().duration(DUR).attr("d",()=>{const o={x:src.x,y:src.y+src.w};return diag(o,o);}).remove();
+  nodes.forEach(d=>{d.x0=d.x;d.y0=d.y;});
+}
+
+function fit(minK){
+  const b=g.node().getBBox();if(!b.width)return;
+  const W=box.clientWidth,H=box.clientHeight;
+  let k=Math.min((W-40)/b.width,(H-40)/b.height,1.1),ty;
+  if(k<minK){k=minK;ty=20-b.y*k;} else ty=(H-b.height*k)/2-b.y*k;
+  const tx=Math.max(20,(W-b.width*k)/2)-b.x*k;
+  svg.transition().duration(DUR).call(zoom.transform,d3.zoomIdentity.translate(tx,ty).scale(k));
+}
+function later(f){setTimeout(f,DUR+40);}
+
+function start(){
+  setDepth(2);
+  root.x0=0;root.y0=0;root.w=measure(root);
+  update(root);
+  later(()=>fit(box.clientWidth<600?0.55:0.65));
+}
+(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(start,start);
+
+// Kontroller
+const vMap=document.getElementById("vMap"),vList=document.getElementById("vList");
+function view(m){
+  const isMap=m==="map";
+  document.getElementById("mapView").hidden=!isMap;document.getElementById("list").hidden=isMap;
+  vMap.setAttribute("aria-pressed",isMap);vList.setAttribute("aria-pressed",!isMap);
+  document.getElementById("bFit").hidden=!isMap;
+  try{localStorage.setItem("kv",m);}catch(e){}
+}
+vMap.onclick=()=>{view("map");later(()=>fit(0.3));};
+vList.onclick=()=>view("list");
+try{if(localStorage.getItem("kv")==="list")view("list");}catch(e){}
+
+document.getElementById("bOpen").onclick=()=>{
+  if(document.getElementById("list").hidden){walk(root,d=>{if(d._all)d.children=d._all;});update(root);later(()=>fit(0.3));}
+  else document.querySelectorAll("#list details").forEach(d=>d.open=true);
+};
+document.getElementById("bClose").onclick=()=>{
+  if(document.getElementById("list").hidden){setDepth(1);update(root);later(()=>fit(0.6));}
+  else document.querySelectorAll("#list details").forEach(d=>d.open=false);
+};
+document.getElementById("bFit").onclick=()=>fit(0.15);
+document.getElementById("bCopy").onclick=()=>{
+  const md=toMd(),wrap=document.getElementById("mdWrap"),ta=document.getElementById("mdbox"),st=document.getElementById("mdStatus");
+  ta.value=md;wrap.hidden=false;
+  const p=navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(md):Promise.reject();
+  p.then(()=>{st.textContent="Markdown panoya kopyalandı. Metin aşağıda da duruyor.";},
+         ()=>{st.textContent="Panoya otomatik kopyalanamadı. Metin seçildi, Ctrl+C / Cmd+C ile kopyalayabilirsin.";ta.focus();ta.select();});
+};
+</script>
+
+</body>
+</html>
